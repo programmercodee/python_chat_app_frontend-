@@ -747,59 +747,66 @@ export default function Chat() {
                         min-width: 100% !important;
                         border-right: none !important;
                         padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px)) !important;
-                        overscroll-behavior: contain; /* prevent iOS bounce scroll */
+                        overscroll-behavior: contain;
                     }
                     
-                    /* make chat window full width on mobile - fixed position for iOS */
-                    /* Note: display is controlled by inline style (showMobileChat) */
+                    /* make chat window full screen on mobile */
                     .chat-window {
                         position: fixed !important;
-                        top: 0;
-                        left: 0;
-                        right: 0;
-                        bottom: calc(56px + env(safe-area-inset-bottom, 0px)); /* support iPhone notch */
-                        width: 100%;
-                        z-index: 10;
-                        overflow: visible;
-                        flex-direction: column;
+                        top: 0 !important;
+                        left: 0 !important;
+                        right: 0 !important;
+                        bottom: 0 !important;
+                        width: 100% !important;
+                        height: 100% !important;
+                        z-index: 100 !important;
+                        display: flex !important;
+                        flex-direction: column !important;
+                        background-color: #0a0a0a !important;
                     }
 
-                    /* make header fixed on mobile - never moves */
+                    /* CRITICAL: Header must stay at top, never scroll */
                     .chat-header {
                         position: fixed !important;
-                        top: 0;
-                        left: 0;
-                        right: 0;
-                        z-index: 50;
-                        pointer-events: auto !important;
+                        top: 0 !important;
+                        left: 0 !important;
+                        right: 0 !important;
+                        z-index: 200 !important;
+                        background-color: #0f0f0f !important;
+                        flex-shrink: 0 !important;
+                        min-height: 60px !important;
                     }
                     
-                    /* add space for fixed header on mobile and make scrollable */
+                    /* Messages area - between header and input */
                     .messages-area {
-                        padding-top: 80px !important; /* header height + some space */
-                        flex: 1 !important;
+                        position: fixed !important;
+                        top: 70px !important;
+                        left: 0 !important;
+                        right: 0 !important;
+                        bottom: 60px !important;
                         overflow-y: auto !important;
-                        -webkit-overflow-scrolling: touch; /* smooth iOS scrolling */
+                        -webkit-overflow-scrolling: touch !important;
+                        padding: 16px !important;
                     }
                     
-                    /* show back button on mobile and ensure clickable */
+                    /* Input form stays at bottom */
+                    .message-input-form {
+                        position: fixed !important;
+                        bottom: 0 !important;
+                        left: 0 !important;
+                        right: 0 !important;
+                        z-index: 200 !important;
+                        background-color: #0f0f0f !important;
+                        padding-bottom: env(safe-area-inset-bottom, 8px) !important;
+                    }
+                    
+                    /* show back button on mobile */
                     .mobile-back-btn {
                         display: flex !important;
                         align-items: center !important;
                         justify-content: center !important;
                         pointer-events: auto !important;
-                        position: relative !important;
-                        z-index: 100 !important;
-                    }
-                    
-                    /* fix message input form on mobile - sticky at bottom */
-                    .message-input-form {
-                        position: sticky;
-                        bottom: 0;
-                        left: 0;
-                        right: 0;
-                        z-index: 30;
-                        background-color: #0f0f0f !important;
+                        z-index: 300 !important;
                     }
                 }
 
@@ -810,53 +817,46 @@ export default function Chat() {
                     }
                     .chat-window {
                         display: flex !important;
+                        position: relative !important;
+                    }
+                    .chat-header {
+                        position: sticky !important;
+                    }
+                    .messages-area {
+                        position: relative !important;
+                        top: auto !important;
+                        bottom: auto !important;
+                    }
+                    .message-input-form {
+                        position: relative !important;
                     }
                 }
 
-                /* Mobile styles - chat window visibility controlled by JS */
+                /* When keyboard is open on mobile */
                 @media (max-width: 768px) {
-                    .chat-window {
-                        /* don't force display on mobile - let JS control it */
-                    }
-                }
-
-                /* When keyboard is open - hide nav, extend chat to bottom */
-                @media (max-width: 768px) {
-                    /* make chat window fit the visible viewport when keyboard open */
                     .keyboard-open .chat-window {
-                        position: fixed !important;
-                        top: 0 !important;
-                        left: 0 !important;
-                        right: 0 !important;
-                        bottom: 0 !important;
-                        height: 100% !important;
-                        height: 100dvh !important; /* dynamic viewport height - accounts for keyboard */
+                        height: 100vh !important;
+                        height: 100dvh !important;
                     }
                     
-                    /* keep header fixed at top of visible area */
+                    /* Header stays fixed at visual viewport top */
                     .keyboard-open .chat-header {
                         position: fixed !important;
                         top: 0 !important;
-                        left: 0 !important;
-                        right: 0 !important;
-                        z-index: 50 !important;
+                        z-index: 999 !important;
                     }
                     
-                    /* ensure input form is always visible when keyboard open */
+                    /* Input stays at visual bottom */
                     .keyboard-open .message-input-form {
                         position: fixed !important;
                         bottom: 0 !important;
-                        left: 0 !important;
-                        right: 0 !important;
-                        z-index: 100 !important;
+                        z-index: 999 !important;
                     }
                     
-                    /* adjust messages area when keyboard is open - space for header and input */
+                    /* Messages area adjusts */
                     .keyboard-open .messages-area {
-                        padding-top: 80px !important;
-                        padding-bottom: 70px !important;
-                        height: calc(100dvh - 150px) !important;
-                        overflow-y: auto !important;
+                        top: 70px !important;
+                        bottom: 60px !important;
                     }
                 }
                 
