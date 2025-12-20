@@ -2,19 +2,21 @@
  * Sidebar component for navigation.
  */
 
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { MessageCircle, Users, Settings, LogOut, Search } from 'lucide-react';
 import { Avatar } from '../ui';
-import { useAuthStore, useChatStore } from '../../store';
+import { useAuthStore, useChatStore, useSocketStore } from '../../store';
 
 export default function Sidebar() {
-    const navigate = useNavigate();
     const { user, logout } = useAuthStore();
     const { conversations } = useChatStore();
+    const { disconnect } = useSocketStore();
 
     const handleLogout = () => {
+        // Disconnect socket before logout
+        disconnect();
+        // Logout clears storage and redirects
         logout();
-        navigate('/login');
     };
 
     const navItems = [

@@ -52,11 +52,19 @@ const useAuthStore = create((set, get) => ({
         }
     },
 
-    // Logout user
+    // Logout user - clear all storage and reset state
     logout: () => {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        set({ user: null, isAuthenticated: false, error: null });
+        // Clear all localStorage
+        localStorage.clear();
+
+        // Also clear sessionStorage if used
+        sessionStorage.clear();
+
+        // Reset auth state
+        set({ user: null, isAuthenticated: false, error: null, isLoading: false });
+
+        // Redirect to login
+        window.location.href = '/login';
     },
 
     // Check auth status (on app load)

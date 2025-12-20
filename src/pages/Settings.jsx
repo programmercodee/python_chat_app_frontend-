@@ -5,14 +5,13 @@
 import { useState } from 'react';
 import { User, Mail, Key, LogOut, Shield, Bell, Palette } from 'lucide-react';
 import { Avatar } from '../components/ui';
-import { useAuthStore } from '../store';
-import { useNavigate } from 'react-router-dom';
+import { useAuthStore, useSocketStore } from '../store';
 import { usersApi } from '../api';
 import toast from 'react-hot-toast';
 
 export default function Settings() {
-    const navigate = useNavigate();
     const { user, logout } = useAuthStore();
+    const { disconnect } = useSocketStore();
     const [username, setUsername] = useState(user?.username || '');
     const [isLoading, setIsLoading] = useState(false);
 
@@ -31,8 +30,10 @@ export default function Settings() {
     };
 
     const handleLogout = () => {
+        // Disconnect socket before logout
+        disconnect();
+        // Logout clears storage and redirects
         logout();
-        navigate('/login');
     };
 
     const sectionStyle = {
