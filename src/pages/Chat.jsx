@@ -777,36 +777,40 @@ export default function Chat() {
                         min-height: 60px !important;
                     }
                     
-                    /* Messages area - between header and input */
+                    /* Messages area - between header and input (above nav) */
                     .messages-area {
                         position: fixed !important;
                         top: 70px !important;
                         left: 0 !important;
                         right: 0 !important;
-                        bottom: 60px !important;
+                        bottom: 120px !important; /* space for input + nav */
                         overflow-y: auto !important;
                         -webkit-overflow-scrolling: touch !important;
                         padding: 16px !important;
                     }
                     
-                    /* Input form stays at bottom */
+                    /* Input form stays above navigation bar */
                     .message-input-form {
                         position: fixed !important;
-                        bottom: 0 !important;
+                        bottom: calc(56px + env(safe-area-inset-bottom, 0px)) !important; /* above nav bar */
                         left: 0 !important;
                         right: 0 !important;
                         z-index: 200 !important;
                         background-color: #0f0f0f !important;
-                        padding-bottom: env(safe-area-inset-bottom, 8px) !important;
+                        padding: 12px 16px !important;
+                        border-top: 1px solid #1f1f1f !important;
                     }
                     
-                    /* show back button on mobile */
+                    /* show back button on mobile and ensure clickable */
                     .mobile-back-btn {
                         display: flex !important;
                         align-items: center !important;
                         justify-content: center !important;
                         pointer-events: auto !important;
-                        z-index: 300 !important;
+                        position: relative !important;
+                        z-index: 999 !important;
+                        -webkit-tap-highlight-color: transparent !important;
+                        touch-action: manipulation !important;
                     }
                 }
 
