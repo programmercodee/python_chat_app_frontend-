@@ -465,7 +465,17 @@ export default function Chat() {
                             <button
                                 type="button"
                                 onClick={(e) => {
+                                    e.preventDefault();
                                     e.stopPropagation();
+                                    console.log('Back button clicked!');
+                                    setShowMobileChat(false);
+                                    setIsInputFocused(false);
+                                    document.body.classList.remove('keyboard-open');
+                                }}
+                                onTouchEnd={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    console.log('Back button touched!');
                                     setShowMobileChat(false);
                                     setIsInputFocused(false);
                                     document.body.classList.remove('keyboard-open');
@@ -478,7 +488,6 @@ export default function Chat() {
                                     border: '1px solid #262626',
                                     color: 'white',
                                     cursor: 'pointer',
-                                    display: 'none', // hidden by default, shown on mobile via CSS
                                     flexShrink: 0,
                                     WebkitTapHighlightColor: 'transparent',
                                     touchAction: 'manipulation',
@@ -750,7 +759,7 @@ export default function Chat() {
                         overscroll-behavior: contain;
                     }
                     
-                    /* make chat window full screen on mobile */
+                    /* make chat window full screen on mobile - DON'T set display here, let JS control */
                     .chat-window {
                         position: fixed !important;
                         top: 0 !important;
@@ -760,7 +769,7 @@ export default function Chat() {
                         width: 100% !important;
                         height: 100% !important;
                         z-index: 100 !important;
-                        display: flex !important;
+                        /* display controlled by inline style */
                         flex-direction: column !important;
                         background-color: #0a0a0a !important;
                     }
@@ -833,6 +842,10 @@ export default function Chat() {
                     }
                     .message-input-form {
                         position: relative !important;
+                    }
+                    /* Hide back button on desktop */
+                    .mobile-back-btn {
+                        display: none !important;
                     }
                 }
 
