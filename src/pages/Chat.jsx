@@ -16,6 +16,31 @@ const decodeMessage = (encryptedContent) => {
     }
 };
 
+// Helper to format message time
+const formatMessageTime = (dateString) => {
+    // Ensure UTC dates are parsed correctly (backend stores in UTC)
+    let dateStr = dateString;
+    if (!dateStr.endsWith('Z') && !dateStr.includes('+')) {
+        dateStr = dateStr + 'Z'; // treat as UTC if no timezone specified
+    }
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+
+    if (diffMins < 1) {
+        return 'just now';
+    } else if (diffMins < 60) {
+        return `${diffMins} min ago`;
+    } else if (diffHours < 24 && date.getDate() === now.getDate()) {
+        return date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+    } else {
+        return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) + ' ' +
+            date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+    }
+};
+
 export default function Chat() {
     const { user } = useAuthStore();
     const {
@@ -526,7 +551,7 @@ export default function Chat() {
                                                         opacity: 0.7,
                                                         textAlign: isOwn ? 'right' : 'left',
                                                     }}>
-                                                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                        {formatMessageTime(msg.created_at)}
                                                     </p>
                                                 </div>
                                             </div>
