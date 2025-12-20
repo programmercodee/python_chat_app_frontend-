@@ -88,7 +88,7 @@ export default function Login() {
                         }}>
                             <MessageCircle style={{ width: '24px', height: '24px' }} />
                         </div>
-                        <span style={{ fontSize: '24px', fontWeight: 'bold' }}>ChatApp</span>
+                        <span style={{ fontSize: '24px', fontWeight: 'bold' }}>TalkTogether</span>
                     </div>
 
                     <h1 style={{ fontSize: '48px', fontWeight: 'bold', lineHeight: '1.1', marginBottom: '24px' }}>

@@ -799,7 +799,7 @@ export default function Chat() {
                             <MessageCircle style={{ width: '60px', height: '60px', color: '#3b82f6' }} />
                         </div>
                         <h2 style={{ fontSize: '24px', fontWeight: '600', color: 'white', marginBottom: '8px' }}>
-                            Welcome to ChatApp
+                            Welcome to TalkTogether
                         </h2>
                         <p style={{ color: '#71717a' }}>Select a conversation to start messaging</p>
                     </div>

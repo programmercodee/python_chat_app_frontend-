@@ -51,7 +51,7 @@ export default function Sidebar() {
                     }}>
                         <MessageCircle style={{ width: '20px', height: '20px', color: 'white' }} />
                     </div>
-                    <span style={{ fontSize: '20px', fontWeight: 'bold', color: 'white' }}>ChatApp</span>
+                    <span style={{ fontSize: '20px', fontWeight: 'bold', color: 'white' }}>TalkTogether</span>
                 </div>
             </div>
 

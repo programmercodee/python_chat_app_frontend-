@@ -106,7 +106,7 @@ export default function Register() {
 
                     <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                         <h2 style={{ fontSize: '30px', fontWeight: 'bold', color: 'white', marginBottom: '8px' }}>Create account</h2>
-                        <p style={{ color: '#71717a' }}>Join thousands of users on ChatApp</p>
+                        <p style={{ color: '#71717a' }}>Join thousands of users on TalkTogether</p>
                     </div>
 
                     {/* Form Card */}
@@ -294,7 +294,7 @@ export default function Register() {
                         }}>
                             <MessageCircle style={{ width: '24px', height: '24px' }} />
                         </div>
-                        <span style={{ fontSize: '24px', fontWeight: 'bold' }}>ChatApp</span>
+                        <span style={{ fontSize: '24px', fontWeight: 'bold' }}>TalkTogether</span>
                     </div>
 
                     <h1 style={{ fontSize: '48px', fontWeight: 'bold', lineHeight: '1.1', marginBottom: '24px' }}>
