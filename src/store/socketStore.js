@@ -6,8 +6,10 @@
 import { create } from 'zustand';
 import { io } from 'socket.io-client';
 
-// Use current hostname for network access
-const SOCKET_URL = `http://${window.location.hostname}:8000`;
+// Use environment variable for Socket URL (set in .env or Render dashboard)
+// Development: http://localhost:8000
+// Production: https://your-backend.onrender.com
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:8000';
 
 const useSocketStore = create((set, get) => ({
     // State

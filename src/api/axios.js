@@ -5,8 +5,10 @@
 
 import axios from 'axios';
 
-// Use current hostname for network access
-const API_URL = `http://${window.location.hostname}:8000/api/v1`;
+// Use environment variable for API URL (set in .env or Render dashboard)
+// Development: http://localhost:8000/api/v1
+// Production: https://your-backend.onrender.com/api/v1
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
 
 // Create axios instance
 const api = axios.create({
