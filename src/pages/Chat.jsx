@@ -69,10 +69,50 @@ export default function Chat() {
     const [messageText, setMessageText] = useState('');
     const [showMobileChat, setShowMobileChat] = useState(false); // for mobile: show chat or list
     const [isInputFocused, setIsInputFocused] = useState(false); // for hiding nav when keyboard opens
+    const [viewportHeight, setViewportHeight] = useState(window.innerHeight); // track viewport for keyboard
     const messagesEndRef = useRef(null);
     const socketInitialized = useRef(false);
     const typingTimeoutRef = useRef(null);
     const isTypingRef = useRef(false);
+    const chatWindowRef = useRef(null);
+
+    // Handle Visual Viewport API for mobile keyboard
+    useEffect(() => {
+        const updateViewportHeight = () => {
+            // Use visualViewport if available (for mobile keyboard handling)
+            const vh = window.visualViewport?.height || window.innerHeight;
+            setViewportHeight(vh);
+
+            // Update CSS custom property for dynamic viewport height
+            document.documentElement.style.setProperty('--viewport-height', `${vh}px`);
+
+            // Scroll the chat window into view when keyboard opens
+            if (chatWindowRef.current && window.visualViewport) {
+                const offsetTop = window.visualViewport.offsetTop;
+                document.documentElement.style.setProperty('--viewport-offset', `${offsetTop}px`);
+            }
+        };
+
+        // Initial update
+        updateViewportHeight();
+
+        // Listen for visual viewport changes (keyboard open/close)
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', updateViewportHeight);
+            window.visualViewport.addEventListener('scroll', updateViewportHeight);
+        }
+
+        // Fallback for browsers without visualViewport
+        window.addEventListener('resize', updateViewportHeight);
+
+        return () => {
+            if (window.visualViewport) {
+                window.visualViewport.removeEventListener('resize', updateViewportHeight);
+                window.visualViewport.removeEventListener('scroll', updateViewportHeight);
+            }
+            window.removeEventListener('resize', updateViewportHeight);
+        };
+    }, []);
 
     // Fetch conversations on mount
     useEffect(() => {
@@ -435,6 +475,7 @@ export default function Chat() {
 
             {/* Chat Window - takes full width on mobile */}
             <div
+                ref={chatWindowRef}
                 className="chat-window"
                 style={{
                     flex: 1,
@@ -849,31 +890,35 @@ export default function Chat() {
                     }
                 }
 
-                /* When keyboard is open on mobile */
+                /* When keyboard is open on mobile - use dynamic viewport height */
                 @media (max-width: 768px) {
                     .keyboard-open .chat-window {
-                        height: 100vh !important;
-                        height: 100dvh !important;
+                        height: var(--viewport-height, 100vh) !important;
+                        max-height: var(--viewport-height, 100vh) !important;
+                        top: var(--viewport-offset, 0) !important;
                     }
                     
                     /* Header stays fixed at visual viewport top */
                     .keyboard-open .chat-header {
                         position: fixed !important;
-                        top: 0 !important;
+                        top: var(--viewport-offset, 0) !important;
                         z-index: 999 !important;
                     }
                     
-                    /* Input stays at visual bottom */
+                    /* Input stays at bottom of visual viewport */
                     .keyboard-open .message-input-form {
                         position: fixed !important;
                         bottom: 0 !important;
+                        top: auto !important;
                         z-index: 999 !important;
                     }
                     
-                    /* Messages area adjusts */
+                    /* Messages area fills between header and input */
                     .keyboard-open .messages-area {
-                        top: 70px !important;
+                        position: fixed !important;
+                        top: calc(var(--viewport-offset, 0px) + 70px) !important;
                         bottom: 60px !important;
+                        height: auto !important;
                     }
                 }
                 
