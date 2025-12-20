@@ -42,22 +42,42 @@ const useChatStore = create((set, get) => ({
         }
     },
 
-    // Add new message (from socket) - prevent duplicates
+    // Add a pending message (for optimistic UI)
+    addPendingMessage: (message) => {
+        set((state) => ({
+            messages: [...state.messages, { ...message, isPending: true }],
+        }));
+    },
+
+    // Add new message (from socket) - prevent duplicates and update pending messages
     addMessage: (message) => {
         set((state) => {
-            // Check if message already exists (prevent duplicates)
-            const exists = state.messages.some(m => m.id === message.id);
-            if (exists) {
+            // Check if message already exists by id
+            const existsById = state.messages.some(m => m.id === message.id);
+            if (existsById) {
                 return state;
             }
 
-            // Only add if it's for the active conversation or update conversation list
-            const isActiveConversation = state.activeConversation?.id === message.conversation_id;
+            // Check if we have a pending message with same nonce (optimistic update)
+            const pendingIndex = state.messages.findIndex(
+                m => m.isPending && m.nonce === message.nonce
+            );
+
+            let updatedMessages;
+            if (pendingIndex !== -1) {
+                // Replace pending message with confirmed message
+                updatedMessages = [...state.messages];
+                updatedMessages[pendingIndex] = { ...message, isPending: false };
+            } else {
+                // Only add if it's for the active conversation
+                const isActiveConversation = state.activeConversation?.id === message.conversation_id;
+                updatedMessages = isActiveConversation
+                    ? [...state.messages, message]
+                    : state.messages;
+            }
 
             return {
-                messages: isActiveConversation
-                    ? [...state.messages, message]
-                    : state.messages,
+                messages: updatedMessages,
                 // Update conversation's last message
                 conversations: state.conversations.map(conv =>
                     conv.id === message.conversation_id

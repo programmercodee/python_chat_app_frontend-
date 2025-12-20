@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useState, useRef } from 'react';
-import { MessageCircle, Plus, Send, Paperclip, Smile, ArrowLeft } from 'lucide-react';
+import { MessageCircle, Plus, Send, Paperclip, Smile, ArrowLeft, Clock } from 'lucide-react';
 import { useAuthStore, useChatStore, useSocketStore } from '../store';
 import { Avatar } from '../components/ui';
 
@@ -51,6 +51,7 @@ export default function Chat() {
         fetchConversations,
         selectConversation,
         addMessage,
+        addPendingMessage,
         setTyping,
         setUserOnline,
         isLoading
@@ -243,6 +244,23 @@ export default function Chat() {
 
         const encryptedContent = btoa(messageText);
         const nonce = btoa(Date.now().toString());
+
+        // Create a pending message for optimistic UI (shows immediately with clock icon)
+        const pendingMessage = {
+            id: `pending-${nonce}`, // Temporary ID
+            conversation_id: activeConversation.id,
+            sender_id: user?.id,
+            encrypted_content: encryptedContent,
+            nonce: nonce,
+            content_type: 'text',
+            created_at: new Date().toISOString(),
+            isPending: true,
+        };
+
+        // Add pending message to UI immediately
+        addPendingMessage(pendingMessage);
+
+        // Send via socket (server will respond with confirmed message)
         sendMessage(activeConversation.id, encryptedContent, nonce);
         setMessageText('');
     };
@@ -593,16 +611,27 @@ export default function Chat() {
                                                     borderRadius: isOwn ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
                                                     backgroundColor: isOwn ? '#3b82f6' : '#1a1a1a',
                                                     color: 'white',
+                                                    opacity: msg.isPending ? 0.7 : 1,
                                                 }}>
                                                     <p style={{ fontSize: '14px', wordBreak: 'break-word' }}>{messageContent}</p>
-                                                    <p style={{
+                                                    <div style={{
                                                         fontSize: '11px',
                                                         marginTop: '4px',
                                                         opacity: 0.7,
-                                                        textAlign: isOwn ? 'right' : 'left',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: isOwn ? 'flex-end' : 'flex-start',
+                                                        gap: '4px',
                                                     }}>
-                                                        {formatMessageTime(msg.created_at)}
-                                                    </p>
+                                                        {msg.isPending ? (
+                                                            <>
+                                                                <Clock style={{ width: '12px', height: '12px' }} />
+                                                                <span>Sending...</span>
+                                                            </>
+                                                        ) : (
+                                                            formatMessageTime(msg.created_at)
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         );
