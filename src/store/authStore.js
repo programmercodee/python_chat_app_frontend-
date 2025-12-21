@@ -28,6 +28,9 @@ const useAuthStore = create((set, get) => ({
             // Get user data
             const user = await authApi.me();
 
+            // Store user ID for socket handlers
+            localStorage.setItem('userId', user.id);
+
             set({ user, isAuthenticated: true, isLoading: false });
             return { success: true };
         } catch (error) {
@@ -78,6 +81,8 @@ const useAuthStore = create((set, get) => ({
 
         try {
             const user = await authApi.me();
+            // Store user ID for socket handlers
+            localStorage.setItem('userId', user.id);
             set({ user, isAuthenticated: true, isLoading: false });
         } catch (error) {
             // Token invalid, clear it

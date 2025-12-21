@@ -54,6 +54,7 @@ export default function Chat() {
         addPendingMessage,
         setTyping,
         setUserOnline,
+        clearUnreadCount,
         isLoading
     } = useChatStore();
     const {
@@ -64,7 +65,8 @@ export default function Chat() {
         startTyping,
         stopTyping,
         isUserOnline,
-        requestOnlineStatus
+        requestOnlineStatus,
+        markRead
     } = useSocketStore();
 
     const [messageText, setMessageText] = useState('');
@@ -130,7 +132,9 @@ export default function Chat() {
             // Listen for new messages
             s.on('new_message', (msg) => {
                 console.log('Received new message:', msg);
-                addMessage(msg);
+                // Get current user id from localStorage since user might not be in closure
+                const currentUserId = localStorage.getItem('userId');
+                addMessage(msg, currentUserId);
             });
 
             // Listen for typing events
@@ -180,6 +184,26 @@ export default function Chat() {
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
+
+    // Mark messages as read when conversation is opened
+    useEffect(() => {
+        if (activeConversation && messages.length > 0 && user?.id) {
+            // Find unread messages not sent by current user
+            const unreadMessageIds = messages
+                .filter(msg => !msg.is_read && msg.sender_id !== user.id)
+                .map(msg => msg.id);
+
+            if (unreadMessageIds.length > 0) {
+                // Mark as read via socket
+                markRead(unreadMessageIds);
+                // Clear unread count in UI
+                clearUnreadCount(activeConversation.id);
+            } else {
+                // Even if no unread messages, ensure badge is cleared
+                clearUnreadCount(activeConversation.id);
+            }
+        }
+    }, [activeConversation?.id, messages, user?.id, markRead, clearUnreadCount]);
 
     // toggle body class when input focused (for hiding nav)
     useEffect(() => {

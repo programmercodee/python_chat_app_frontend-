@@ -50,7 +50,7 @@ const useChatStore = create((set, get) => ({
     },
 
     // Add new message (from socket) - prevent duplicates and update pending messages
-    addMessage: (message) => {
+    addMessage: (message, currentUserId) => {
         set((state) => {
             // Check if message already exists by id
             const existsById = state.messages.some(m => m.id === message.id);
@@ -63,6 +63,9 @@ const useChatStore = create((set, get) => ({
                 m => m.isPending && m.nonce === message.nonce
             );
 
+            const isActiveConversation = state.activeConversation?.id === message.conversation_id;
+            const isFromOtherUser = message.sender_id !== currentUserId;
+
             let updatedMessages;
             if (pendingIndex !== -1) {
                 // Replace pending message with confirmed message
@@ -70,7 +73,6 @@ const useChatStore = create((set, get) => ({
                 updatedMessages[pendingIndex] = { ...message, isPending: false };
             } else {
                 // Only add if it's for the active conversation
-                const isActiveConversation = state.activeConversation?.id === message.conversation_id;
                 updatedMessages = isActiveConversation
                     ? [...state.messages, message]
                     : state.messages;
@@ -78,10 +80,17 @@ const useChatStore = create((set, get) => ({
 
             return {
                 messages: updatedMessages,
-                // Update conversation's last message
+                // Update conversation's last message and increment unread count if not active
                 conversations: state.conversations.map(conv =>
                     conv.id === message.conversation_id
-                        ? { ...conv, last_message: message }
+                        ? {
+                            ...conv,
+                            last_message: message,
+                            // Increment unread count if message is from other user and not in active conversation
+                            unread_count: (!isActiveConversation && isFromOtherUser)
+                                ? (conv.unread_count || 0) + 1
+                                : conv.unread_count
+                        }
                         : conv
                 ),
             };
@@ -134,6 +143,17 @@ const useChatStore = create((set, get) => ({
         } catch (error) {
             console.error('Failed to mark as read:', error);
         }
+    },
+
+    // Clear unread count for a conversation
+    clearUnreadCount: (conversationId) => {
+        set((state) => ({
+            conversations: state.conversations.map(conv =>
+                conv.id === conversationId
+                    ? { ...conv, unread_count: 0 }
+                    : conv
+            ),
+        }));
     },
 
     // Update online status for a user
