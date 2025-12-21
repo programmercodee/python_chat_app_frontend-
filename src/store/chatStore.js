@@ -17,8 +17,14 @@ const useChatStore = create((set, get) => ({
     // Actions
 
     // Fetch all conversations
-    fetchConversations: async () => {
-        set({ isLoading: true });
+    fetchConversations: async (forceRefresh = false) => {
+        const { conversations } = get();
+
+        // Only show loading if no conversations loaded yet
+        if (conversations.length === 0 || forceRefresh) {
+            set({ isLoading: true });
+        }
+
         try {
             const data = await conversationsApi.getAll();
             set({ conversations: data.conversations || [], isLoading: false });
@@ -30,15 +36,25 @@ const useChatStore = create((set, get) => ({
 
     // Select a conversation
     selectConversation: async (conversationId) => {
+        const { activeConversation } = get();
+
+        // If already on this conversation, don't refetch
+        if (activeConversation?.id === conversationId) {
+            return;
+        }
+
         const conversation = get().conversations.find(c => c.id === conversationId);
-        set({ activeConversation: conversation, messages: [], isLoading: true });
+        // Set conversation immediately, don't show loading (fetch in background)
+        set({ activeConversation: conversation, messages: [] });
 
         try {
             const data = await messagesApi.getByConversation(conversationId);
-            set({ messages: data.messages || [], isLoading: false });
+            // Only update if still on same conversation
+            if (get().activeConversation?.id === conversationId) {
+                set({ messages: data.messages || [] });
+            }
         } catch (error) {
             console.error('Failed to fetch messages:', error);
-            set({ isLoading: false });
         }
     },
 
