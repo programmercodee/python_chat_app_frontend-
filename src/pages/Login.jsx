@@ -152,22 +152,11 @@ export default function Login() {
                 <div style={{ width: '100%', maxWidth: '400px' }}>
                     {/* Mobile Logo */}
                     <div className="lg:hidden" style={{ textAlign: 'center', marginBottom: '32px' }}>
-                        <div style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            width: '64px',
-                            height: '64px',
-                            borderRadius: '16px',
-                            background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-                            marginBottom: '16px',
-                        }}>
-                            <MessageCircle style={{ width: '32px', height: '32px', color: 'white' }} />
-                        </div>
+                       <h1 className="text-4xl font-bold">TalkTogether</h1>
                     </div>
 
                     <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-                        <h2 style={{ fontSize: '30px', fontWeight: 'bold', color: 'white', marginBottom: '8px' }}>Welcome back</h2>
+                        <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: 'white', marginBottom: '8px' }}>Welcome back</h2>
                         <p style={{ color: '#71717a' }}>Sign in to continue to your account</p>
                     </div>
 
