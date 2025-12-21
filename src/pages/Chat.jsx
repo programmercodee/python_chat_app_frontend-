@@ -286,63 +286,29 @@ export default function Chat() {
 
     return (
         <div
-            className={isInputFocused ? 'keyboard-open' : ''}
-            style={{
-                display: 'flex',
-                height: '100%',
-                backgroundColor: '#0a0a0a',
-                overflow: 'hidden', // prevent iOS overscroll
-                position: 'relative',
-            }}
+            className={`flex h-full bg-[#0a0a0a] overflow-hidden relative ${isInputFocused ? 'keyboard-open' : ''}`}
         >
             {/* Chat List Panel - hidden on mobile when chat is open */}
             <div
-                className="chat-list-panel"
+                className="chat-list-panel flex-col bg-[#0f0f0f]"
                 style={{
                     width: '360px',
                     minWidth: '360px',
                     borderRight: '1px solid #1f1f1f',
                     display: showMobileChat ? 'none' : 'flex', // hide on mobile when chat open
-                    flexDirection: 'column',
-                    backgroundColor: '#0f0f0f',
                 }}
             >
                 {/* Header */}
-                <div style={{
-                    padding: '20px',
-                    borderBottom: '1px solid #1f1f1f',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                }}>
-                    <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: 'white' }}>Chats</h1>
-                    <button style={{
-                        padding: '10px',
-                        borderRadius: '10px',
-                        backgroundColor: '#1a1a1a',
-                        border: '1px solid #262626',
-                        color: '#a1a1aa',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                    }}>
-                        <Plus style={{ width: '20px', height: '20px' }} />
+                <div className="!p-5 flex items-center justify-between border-b border-[#1f1f1f]">
+                    <h1 className="text-2xl font-bold text-white">Chats</h1>
+                    <button className="!p-2.5 rounded-[10px] bg-[#1a1a1a] border border-[#262626] text-[#a1a1aa] cursor-pointer flex items-center justify-center">
+                        <Plus className="w-5 h-5" />
                     </button>
                 </div>
 
                 {/* Connection Status */}
                 {!isConnected && (
-                    <div style={{
-                        padding: '12px 20px',
-                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                        borderBottom: '1px solid rgba(239, 68, 68, 0.2)',
-                        color: '#ef4444',
-                        fontSize: '14px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                    }}>
+                    <div className="!py-3 !px-5 bg-red-500/10 border-b border-red-500/20 text-red-500 text-sm flex items-center gap-2">
                         <div style={{
                             width: '8px',
                             height: '8px',
@@ -355,17 +321,10 @@ export default function Chat() {
                 )}
 
                 {/* Conversations List */}
-                <div style={{ flex: 1, overflowY: 'auto', padding: '12px' }}>
+                <div className="flex-1 overflow-y-auto !p-3">
                     {isLoading ? (
                         /* Loading state */
-                        <div style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            height: '100%',
-                            padding: '40px',
-                        }}>
+                        <div className="flex flex-col items-center justify-center h-full !p-10">
                             <div style={{
                                 width: '40px',
                                 height: '40px',
@@ -374,33 +333,15 @@ export default function Chat() {
                                 borderRadius: '50%',
                                 animation: 'spin 1s linear infinite',
                             }} />
-                            <p style={{ color: '#71717a', marginTop: '16px' }}>Loading chats...</p>
+                            <p className="text-[#71717a] !mt-4">Loading chats...</p>
                         </div>
                     ) : conversations.length === 0 ? (
-                        <div style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            height: '100%',
-                            color: '#52525b',
-                            textAlign: 'center',
-                            padding: '40px',
-                        }}>
-                            <div style={{
-                                width: '80px',
-                                height: '80px',
-                                borderRadius: '20px',
-                                backgroundColor: '#1a1a1a',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                marginBottom: '16px',
-                            }}>
-                                <MessageCircle style={{ width: '40px', height: '40px', color: '#3b82f6' }} />
+                        <div className="flex flex-col items-center justify-center h-full text-[#52525b] text-center !p-10">
+                            <div className="w-20 h-20 rounded-[20px] bg-[#1a1a1a] flex items-center justify-center !mb-4">
+                                <MessageCircle className="w-10 h-10 text-blue-500" />
                             </div>
-                            <p style={{ fontSize: '16px', fontWeight: '500', color: '#a1a1aa' }}>No conversations yet</p>
-                            <p style={{ fontSize: '14px', marginTop: '4px' }}>Start a new chat!</p>
+                            <p className="text-base font-medium text-[#a1a1aa]">No conversations yet</p>
+                            <p className="text-sm !mt-1">Start a new chat!</p>
                         </div>
                     ) : (
                         conversations.map((conv) => {
@@ -423,36 +364,23 @@ export default function Chat() {
                                 <button
                                     key={conv.id}
                                     onClick={() => handleSelectConversation(conv.id)}
+                                    className="w-full flex items-center !gap-3 !p-3.5 !rounded-[14px] !mb-2 cursor-pointer text-left transition-all"
                                     style={{
-                                        width: '100%',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '12px',
-                                        padding: '14px',
-                                        borderRadius: '14px',
-                                        marginBottom: '8px',
                                         border: isActive ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid transparent',
                                         backgroundColor: isActive ? 'rgba(59, 130, 246, 0.1)' : '#1a1a1a',
-                                        cursor: 'pointer',
-                                        textAlign: 'left',
-                                        transition: 'all 0.2s',
                                     }}
                                 >
                                     <Avatar name={name} isOnline={otherIsOnline} size="md" />
-                                    <div style={{ flex: 1, minWidth: 0 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                            <p style={{
-                                                fontSize: '14px',
-                                                fontWeight: '500',
-                                                color: isActive ? 'white' : '#e4e4e7',
-                                                whiteSpace: 'nowrap',
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis',
-                                            }}>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center justify-between">
+                                            <p
+                                                className="text-sm font-medium truncate"
+                                                style={{ color: isActive ? 'white' : '#e4e4e7' }}
+                                            >
                                                 {name}
                                             </p>
                                             {conv.last_message && (
-                                                <span style={{ fontSize: '12px', color: '#52525b' }}>
+                                                <span className="text-xs text-[#52525b]">
                                                     {new Date(conv.last_message.created_at).toLocaleTimeString([], {
                                                         hour: '2-digit',
                                                         minute: '2-digit'
@@ -460,27 +388,18 @@ export default function Chat() {
                                                 </span>
                                             )}
                                         </div>
-                                        <p style={{
-                                            fontSize: '13px',
-                                            color: typingHere.length > 0 ? '#10b981' : '#71717a',
-                                            marginTop: '2px',
-                                            whiteSpace: 'nowrap',
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis',
-                                            fontStyle: typingHere.length > 0 ? 'italic' : 'normal',
-                                        }}>
+                                        <p
+                                            className="text-[13px] !mt-0.5 truncate"
+                                            style={{
+                                                color: typingHere.length > 0 ? '#10b981' : '#71717a',
+                                                fontStyle: typingHere.length > 0 ? 'italic' : 'normal',
+                                            }}
+                                        >
                                             {lastMsgPreview}
                                         </p>
                                     </div>
                                     {conv.unread_count > 0 && (
-                                        <span style={{
-                                            padding: '4px 10px',
-                                            fontSize: '12px',
-                                            fontWeight: '600',
-                                            backgroundColor: '#3b82f6',
-                                            color: 'white',
-                                            borderRadius: '10px',
-                                        }}>
+                                        <span className="!py-1 !px-2.5 text-xs font-semibold bg-blue-500 text-white rounded-[10px]">
                                             {conv.unread_count}
                                         </span>
                                     )}
@@ -494,26 +413,17 @@ export default function Chat() {
             {/* Chat Window - takes full width on mobile */}
             <div
                 ref={chatWindowRef}
-                className="chat-window"
+                className="chat-window flex-1 flex-col bg-[#0a0a0a]"
                 style={{
-                    flex: 1,
                     display: showMobileChat ? 'flex' : 'none', // show on mobile only when chat selected
-                    flexDirection: 'column',
-                    backgroundColor: '#0a0a0a',
                 }}
             >
                 {activeConversation ? (
                     <>
                         {/* Chat Header - fixed at top on mobile */}
                         <div
-                            className="chat-header"
+                            className="chat-header !py-4 !px-5 flex items-center gap-3 bg-[#0f0f0f] border-b border-[#1f1f1f]"
                             style={{
-                                padding: '16px 20px',
-                                borderBottom: '1px solid #1f1f1f',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '12px',
-                                backgroundColor: '#0f0f0f',
                                 position: 'sticky',
                                 top: 0,
                                 zIndex: 50,
@@ -539,57 +449,36 @@ export default function Chat() {
                                     setIsInputFocused(false);
                                     document.body.classList.remove('keyboard-open');
                                 }}
-                                className="mobile-back-btn"
+                                className="mobile-back-btn !p-3 rounded-[10px] bg-[#1a1a1a] border border-[#262626] text-white cursor-pointer shrink-0"
                                 style={{
-                                    padding: '12px',
-                                    borderRadius: '10px',
-                                    backgroundColor: '#1a1a1a',
-                                    border: '1px solid #262626',
-                                    color: 'white',
-                                    cursor: 'pointer',
-                                    flexShrink: 0,
                                     WebkitTapHighlightColor: 'transparent',
                                     touchAction: 'manipulation',
                                 }}
                             >
-                                <ArrowLeft style={{ width: '20px', height: '20px' }} />
+                                <ArrowLeft className="w-5 h-5" />
                             </button>
                             <Avatar name={chatName} isOnline={isOtherOnline} size="md" />
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                                <h2 style={{ fontSize: '16px', fontWeight: '600', color: 'white' }}>{chatName}</h2>
-                                <p style={{ fontSize: '13px', color: isOtherTyping ? '#10b981' : (isOtherOnline ? '#10b981' : '#71717a') }}>
+                            <div className="flex-1 min-w-0">
+                                <h2 className="text-base font-semibold text-white">{chatName}</h2>
+                                <p
+                                    className="text-[13px]"
+                                    style={{ color: isOtherTyping ? '#10b981' : (isOtherOnline ? '#10b981' : '#71717a') }}
+                                >
                                     {isOtherTyping ? 'typing...' : (isOtherOnline ? 'Online' : 'Offline')}
                                 </p>
                             </div>
                         </div>
 
                         {/* Messages Area */}
-                        <div
-                            className="messages-area"
-                            style={{
-                                flex: 1,
-                                overflowY: 'auto',
-                                padding: '24px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '8px',
-                            }}
-                        >
+                        <div className="messages-area flex-1 overflow-y-auto !p-6 flex flex-col gap-2">
                             {isLoading ? (
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#71717a' }}>
+                                <div className="flex items-center justify-center h-full text-[#71717a]">
                                     Loading messages...
                                 </div>
                             ) : messages.length === 0 ? (
-                                <div style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    height: '100%',
-                                    color: '#52525b',
-                                }}>
-                                    <p style={{ color: '#a1a1aa' }}>No messages yet</p>
-                                    <p style={{ fontSize: '14px' }}>Send a message to start the conversation</p>
+                                <div className="flex flex-col items-center justify-center h-full text-[#52525b]">
+                                    <p className="text-[#a1a1aa]">No messages yet</p>
+                                    <p className="text-sm">Send a message to start the conversation</p>
                                 </div>
                             ) : (
                                 <>
@@ -600,32 +489,25 @@ export default function Chat() {
                                         return (
                                             <div
                                                 key={msg.id}
-                                                style={{
-                                                    display: 'flex',
-                                                    justifyContent: isOwn ? 'flex-end' : 'flex-start',
-                                                }}
+                                                className="flex"
+                                                style={{ justifyContent: isOwn ? 'flex-end' : 'flex-start' }}
                                             >
-                                                <div style={{
-                                                    maxWidth: '70%',
-                                                    padding: '12px 16px',
-                                                    borderRadius: isOwn ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                                                    backgroundColor: isOwn ? '#3b82f6' : '#1a1a1a',
-                                                    color: 'white',
-                                                    opacity: msg.isPending ? 0.7 : 1,
-                                                }}>
-                                                    <p style={{ fontSize: '14px', wordBreak: 'break-word' }}>{messageContent}</p>
-                                                    <div style={{
-                                                        fontSize: '11px',
-                                                        marginTop: '4px',
-                                                        opacity: 0.7,
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: isOwn ? 'flex-end' : 'flex-start',
-                                                        gap: '4px',
-                                                    }}>
+                                                <div
+                                                    className="max-w-[70%] !py-3 !px-4 text-white"
+                                                    style={{
+                                                        borderRadius: isOwn ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+                                                        backgroundColor: isOwn ? '#3b82f6' : '#1a1a1a',
+                                                        opacity: msg.isPending ? 0.7 : 1,
+                                                    }}
+                                                >
+                                                    <p className="text-sm break-words">{messageContent}</p>
+                                                    <div
+                                                        className="text-[11px] !mt-1 opacity-70 flex items-center gap-1"
+                                                        style={{ justifyContent: isOwn ? 'flex-end' : 'flex-start' }}
+                                                    >
                                                         {msg.isPending ? (
                                                             <>
-                                                                <Clock style={{ width: '12px', height: '12px' }} />
+                                                                <Clock className="w-3 h-3" />
                                                                 <span>Sending...</span>
                                                             </>
                                                         ) : (
@@ -639,15 +521,8 @@ export default function Chat() {
 
                                     {/* Typing indicator */}
                                     {isOtherTyping && (
-                                        <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '8px' }}>
-                                            <div style={{
-                                                padding: '14px 18px',
-                                                borderRadius: '18px 18px 18px 4px',
-                                                backgroundColor: '#1a1a1a',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '6px',
-                                            }}>
+                                        <div className="flex justify-start !mb-2">
+                                            <div className="!py-3.5 !px-[18px] rounded-[18px] rounded-bl-[4px] bg-[#1a1a1a] flex items-center gap-1.5">
                                                 <span style={{
                                                     width: '10px',
                                                     height: '10px',
@@ -684,30 +559,14 @@ export default function Chat() {
                         {/* Message Input */}
                         <form
                             onSubmit={handleSendMessage}
-                            className="message-input-form"
-                            style={{
-                                padding: '12px 16px',
-                                borderTop: '1px solid #1f1f1f',
-                                backgroundColor: '#0f0f0f',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px',
-                            }}
+                            className="message-input-form !py-3 !px-4 flex items-center gap-2 bg-[#0f0f0f] border-t border-[#1f1f1f]"
                         >
                             {/* Attachment button */}
                             <button
                                 type="button"
-                                style={{
-                                    padding: '10px',
-                                    borderRadius: '10px',
-                                    backgroundColor: 'transparent',
-                                    border: 'none',
-                                    color: '#71717a',
-                                    cursor: 'pointer',
-                                    flexShrink: 0,
-                                }}
+                                className="!p-2.5 rounded-[10px] bg-transparent border-none text-[#71717a] cursor-pointer shrink-0"
                             >
-                                <Paperclip style={{ width: '20px', height: '20px' }} />
+                                <Paperclip className="w-5 h-5" />
                             </button>
 
                             {/* Message input - takes all available space */}
@@ -718,33 +577,15 @@ export default function Chat() {
                                 onFocus={() => setIsInputFocused(true)}
                                 onBlur={() => setIsInputFocused(false)}
                                 placeholder="Type a message..."
-                                style={{
-                                    flex: 1,
-                                    minWidth: 0, /* allow shrinking */
-                                    padding: '12px 16px',
-                                    borderRadius: '12px',
-                                    backgroundColor: '#1a1a1a',
-                                    border: '1px solid #262626',
-                                    color: 'white',
-                                    fontSize: '16px', /* prevent iOS zoom on focus */
-                                    outline: 'none',
-                                }}
+                                className="flex-1 min-w-0 !py-3 !px-4 rounded-xl bg-[#1a1a1a] border border-[#262626] text-white text-base outline-none"
                             />
 
                             {/* Emoji button */}
                             <button
                                 type="button"
-                                style={{
-                                    padding: '10px',
-                                    borderRadius: '10px',
-                                    backgroundColor: 'transparent',
-                                    border: 'none',
-                                    color: '#71717a',
-                                    cursor: 'pointer',
-                                    flexShrink: 0,
-                                }}
+                                className="!p-2.5 rounded-[10px] bg-transparent border-none text-[#71717a] cursor-pointer shrink-0"
                             >
-                                <Smile style={{ width: '20px', height: '20px' }} />
+                                <Smile className="w-5 h-5" />
                             </button>
 
                             {/* Send button - prevent blur on click so keyboard stays open */}
@@ -758,50 +599,32 @@ export default function Chat() {
                                         e.preventDefault();
                                     }
                                 }}
+                                className="!p-3 rounded-xl border-none text-white flex items-center justify-center shrink-0"
                                 style={{
-                                    padding: '12px',
-                                    borderRadius: '12px',
                                     background: messageText.trim() ? 'linear-gradient(135deg, #3b82f6, #8b5cf6)' : '#262626',
-                                    border: 'none',
-                                    color: 'white',
                                     cursor: messageText.trim() ? 'pointer' : 'not-allowed',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    flexShrink: 0,
                                     WebkitTapHighlightColor: 'transparent',
                                 }}
                             >
-                                <Send style={{ width: '18px', height: '18px' }} />
+                                <Send className="w-[18px] h-[18px]" />
                             </button>
                         </form>
                     </>
                 ) : (
-                    <div style={{
-                        flex: 1,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#52525b',
-                    }}>
-                        <div style={{
-                            width: '120px',
-                            height: '120px',
-                            borderRadius: '30px',
-                            background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1))',
-                            border: '1px solid rgba(59, 130, 246, 0.2)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            marginBottom: '24px',
-                        }}>
-                            <MessageCircle style={{ width: '60px', height: '60px', color: '#3b82f6' }} />
+                    <div className="flex-1 flex flex-col items-center justify-center text-[#52525b]">
+                        <div
+                            className="w-[120px] h-[120px] rounded-[30px] flex items-center justify-center !mb-6"
+                            style={{
+                                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1))',
+                                border: '1px solid rgba(59, 130, 246, 0.2)',
+                            }}
+                        >
+                            <MessageCircle className="w-[60px] h-[60px] text-blue-500" />
                         </div>
-                        <h2 style={{ fontSize: '24px', fontWeight: '600', color: 'white', marginBottom: '8px' }}>
+                        <h2 className="text-2xl font-semibold text-white !mb-2">
                             Welcome to TalkTogether
                         </h2>
-                        <p style={{ color: '#71717a' }}>Select a conversation to start messaging</p>
+                        <p className="text-[#71717a]">Select a conversation to start messaging</p>
                     </div>
                 )}
             </div>
