@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useState, useRef } from 'react';
-import { MessageCircle, Plus, Send, Paperclip, Smile, ArrowLeft, Clock } from 'lucide-react';
+import { MessageCircle, Plus, Send, Paperclip, Smile, ArrowLeft, Clock, Search } from 'lucide-react';
 import { useAuthStore, useChatStore, useSocketStore } from '../store';
 import { Avatar } from '../components/ui';
 
@@ -73,6 +73,7 @@ export default function Chat() {
     const [showMobileChat, setShowMobileChat] = useState(false); // for mobile: show chat or list
     const [isInputFocused, setIsInputFocused] = useState(false); // for hiding nav when keyboard opens
     const [viewportHeight, setViewportHeight] = useState(window.innerHeight); // track viewport for keyboard
+    const [searchQuery, setSearchQuery] = useState(''); // search filter for conversations
     const messagesEndRef = useRef(null);
     const socketInitialized = useRef(false);
     const typingTimeoutRef = useRef(null);
@@ -330,6 +331,20 @@ export default function Chat() {
                     </button>
                 </div>
 
+                {/* Search Box */}
+                <div className="!px-4 !py-3 border-b border-[#1f1f1f]">
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#71717a]" />
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search conversations..."
+                            className="w-full !py-2.5 !pl-10 !pr-4 rounded-xl bg-[#1a1a1a] border border-[#262626] text-white text-sm outline-none placeholder:text-[#52525b] focus:border-blue-500/50 transition-colors"
+                        />
+                    </div>
+                </div>
+
                 {/* Connection Status */}
                 {!isConnected && (
                     <div className="!py-3 !px-5 bg-red-500/10 border-b border-red-500/20 text-red-500 text-sm flex items-center gap-2">
@@ -368,68 +383,75 @@ export default function Chat() {
                             <p className="text-sm !mt-1">Start a new chat!</p>
                         </div>
                     ) : (
-                        conversations.map((conv) => {
-                            const other = getOtherMember(conv);
-                            const name = conv.type === 'group' ? conv.name : other?.username || 'Unknown';
-                            const isActive = activeConversation?.id === conv.id;
-                            const otherIsOnline = other ? isUserOnline(other.user_id) : false;
+                        conversations
+                            .filter((conv) => {
+                                if (!searchQuery.trim()) return true;
+                                const other = getOtherMember(conv);
+                                const name = conv.type === 'group' ? conv.name : other?.username || '';
+                                return name.toLowerCase().includes(searchQuery.toLowerCase());
+                            })
+                            .map((conv) => {
+                                const other = getOtherMember(conv);
+                                const name = conv.type === 'group' ? conv.name : other?.username || 'Unknown';
+                                const isActive = activeConversation?.id === conv.id;
+                                const otherIsOnline = other ? isUserOnline(other.user_id) : false;
 
-                            // Check if typing in this conversation
-                            const typingHere = (typingUsers[conv.id] || []).filter(id => id !== user?.id);
+                                // Check if typing in this conversation
+                                const typingHere = (typingUsers[conv.id] || []).filter(id => id !== user?.id);
 
-                            // Decode last message preview
-                            const lastMsgPreview = typingHere.length > 0
-                                ? 'typing...'
-                                : conv.last_message?.encrypted_content
-                                    ? decodeMessage(conv.last_message.encrypted_content)
-                                    : 'No messages yet';
+                                // Decode last message preview
+                                const lastMsgPreview = typingHere.length > 0
+                                    ? 'typing...'
+                                    : conv.last_message?.encrypted_content
+                                        ? decodeMessage(conv.last_message.encrypted_content)
+                                        : 'No messages yet';
 
-                            return (
-                                <button
-                                    key={conv.id}
-                                    onClick={() => handleSelectConversation(conv.id)}
-                                    className="w-full flex items-center !gap-3 !p-3.5 !rounded-[14px] !mb-2 cursor-pointer text-left transition-all"
-                                    style={{
-                                        border: isActive ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid transparent',
-                                        backgroundColor: isActive ? 'rgba(59, 130, 246, 0.1)' : '#1a1a1a',
-                                    }}
-                                >
-                                    <Avatar name={name} isOnline={otherIsOnline} size="md" />
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center justify-between">
+                                return (
+                                    <button
+                                        key={conv.id}
+                                        onClick={() => handleSelectConversation(conv.id)}
+                                        className="w-full flex items-center !gap-3 !p-3.5 !rounded-[14px] !mb-2 cursor-pointer text-left transition-all"
+                                        style={{
+                                            border: isActive ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid transparent',
+                                            backgroundColor: isActive ? 'rgba(59, 130, 246, 0.1)' : '#1a1a1a',
+                                        }}
+                                    >
+                                        <Avatar name={name} isOnline={otherIsOnline} size="md" />
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center justify-between">
+                                                <p
+                                                    className="text-sm font-medium truncate"
+                                                    style={{ color: isActive ? 'white' : '#e4e4e7' }}
+                                                >
+                                                    {name}
+                                                </p>
+                                                {conv.last_message && (
+                                                    <span className="text-xs text-[#52525b]">
+                                                        {new Date(conv.last_message.created_at).toLocaleTimeString([], {
+                                                            hour: '2-digit',
+                                                            minute: '2-digit'
+                                                        })}
+                                                    </span>
+                                                )}
+                                            </div>
                                             <p
-                                                className="text-sm font-medium truncate"
-                                                style={{ color: isActive ? 'white' : '#e4e4e7' }}
+                                                className="text-[13px] !mt-0.5 truncate"
+                                                style={{
+                                                    color: typingHere.length > 0 ? '#10b981' : '#71717a',
+                                                    fontStyle: typingHere.length > 0 ? 'italic' : 'normal',
+                                                }}
                                             >
-                                                {name}
+                                                {lastMsgPreview}
                                             </p>
-                                            {conv.last_message && (
-                                                <span className="text-xs text-[#52525b]">
-                                                    {new Date(conv.last_message.created_at).toLocaleTimeString([], {
-                                                        hour: '2-digit',
-                                                        minute: '2-digit'
-                                                    })}
-                                                </span>
-                                            )}
                                         </div>
-                                        <p
-                                            className="text-[13px] !mt-0.5 truncate"
-                                            style={{
-                                                color: typingHere.length > 0 ? '#10b981' : '#71717a',
-                                                fontStyle: typingHere.length > 0 ? 'italic' : 'normal',
-                                            }}
-                                        >
-                                            {lastMsgPreview}
-                                        </p>
-                                    </div>
-                                    {conv.unread_count > 0 && (
-                                        <span className="!py-1 !px-2.5 text-xs font-semibold bg-blue-500 text-white rounded-[10px]">
-                                            {conv.unread_count}
-                                        </span>
-                                    )}
-                                </button>
-                            );
-                        })
+                                        {conv.unread_count > 0 && (
+                                            <span className="!py-1 !px-2.5 text-xs font-semibold bg-blue-500 text-white rounded-[10px]">
+                                                {conv.unread_count}
+                                            </span>
+                                        )}
+                                    </button>
+                                );
+                            })
                     )}
                 </div>
             </div>
