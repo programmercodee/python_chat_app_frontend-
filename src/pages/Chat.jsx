@@ -324,13 +324,24 @@ export default function Chat() {
                 }}
             >
                 {/* Header */}
-                <div className="!p-5 flex items-center justify-between border-b border-[#1f1f1f]">
-                    <h1 className="text-2xl font-bold text-white">Chats</h1>
-                    <button className="!p-2.5 rounded-[10px] bg-[#1a1a1a] border border-[#262626] text-[#a1a1aa] cursor-pointer flex items-center justify-center">
-                        <Plus className="w-5 h-5" />
-                    </button>
+                <div className="flex flex-col">
+                    {/* Brand Logo - only visible on mobile/tablet */}
+                    <div className="!px-5 !pt-4 !pb-2 flex items-center gap-2 md:hidden">
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)' }}>
+                            <MessageCircle className="w-4 h-4 text-white" />
+                        </div>
+                        <span className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                            TalkTogether
+                        </span>
+                    </div>
+                    {/* Chats Title Row */}
+                    <div className="!px-5 !pb-3 md:!mt-3 flex items-center justify-between border-b border-[#1f1f1f]">
+                        <h2 className="text-lg font-semibold text-white">Chats</h2>
+                        <button className="!p-2 rounded-lg bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 text-blue-400 cursor-pointer flex items-center justify-center hover:border-blue-500/40 transition-colors">
+                            <Plus className="w-4 h-4" />
+                        </button>
+                    </div>
                 </div>
-
                 {/* Search Box */}
                 <div className="!px-4 !py-3 border-b border-[#1f1f1f]">
                     <div className="relative">

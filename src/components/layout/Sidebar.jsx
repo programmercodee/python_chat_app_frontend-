@@ -56,7 +56,7 @@ export default function Sidebar() {
             </div>
 
             {/* Search */}
-            <div style={{ padding: '16px' }}>
+            {/* <div style={{ padding: '16px' }}>
                 <div style={{ position: 'relative' }}>
                     <Search style={{
                         position: 'absolute',
@@ -85,7 +85,7 @@ export default function Sidebar() {
                         }}
                     />
                 </div>
-            </div>
+            </div> */}
 
             {/* Navigation */}
             <nav style={{ flex: 1, padding: '8px 12px' }}>
