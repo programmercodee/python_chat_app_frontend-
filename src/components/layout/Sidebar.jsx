@@ -6,6 +6,7 @@ import { NavLink } from 'react-router-dom';
 import { MessageCircle, Users, Settings, LogOut, Search } from 'lucide-react';
 import { Avatar } from '../ui';
 import { useAuthStore, useChatStore, useSocketStore } from '../../store';
+import logo from '../../assets/logo.png';
 
 export default function Sidebar() {
     const { user, logout } = useAuthStore();
@@ -35,23 +36,12 @@ export default function Sidebar() {
             flexDirection: 'column',
         }}>
             {/* Logo */}
-            <div style={{
-                padding: '20px',
-                borderBottom: '1px solid #1f1f1f',
-            }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '12px',
-                        background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                    }}>
-                        <MessageCircle style={{ width: '20px', height: '20px', color: 'white' }} />
+            <div className="!p-5 !border-b !border-[#1f1f1f]">
+                <div className="flex items-center gap-1">
+                    <div className="!w-14 !h-14 !rounded-xl flex items-center justify-center overflow-hidden bg-transparent">
+                        <img src={logo} alt="TalkTogether" className="!w-full !h-full !object-cover" />
                     </div>
-                    <span style={{ fontSize: '20px', fontWeight: 'bold', color: 'white' }}>TalkTogether</span>
+                    <span className="text-xl font-bold text-white tracking-tight">TalkTogether</span>
                 </div>
             </div>
 

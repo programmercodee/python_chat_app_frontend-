@@ -6,6 +6,7 @@ import { useEffect, useState, useRef } from 'react';
 import { MessageCircle, Plus, Send, Paperclip, Smile, ArrowLeft, Clock, Search } from 'lucide-react';
 import { useAuthStore, useChatStore, useSocketStore } from '../store';
 import { Avatar } from '../components/ui';
+import logo from '../assets/logo.png';
 
 // Helper to decode base64 message
 // Helper to decode base64 message (Unicode safe)
@@ -345,10 +346,11 @@ export default function Chat() {
             >
                 {/* Header */}
                 <div className="flex flex-col">
+
                     {/* Brand Logo - only visible on mobile/tablet */}
-                    <div className="!px-5 !pt-4 !pb-2 flex items-center gap-2 md:hidden">
-                        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)' }}>
-                            <MessageCircle className="w-4 h-4 text-white" />
+                    <div className="!px-5 !pt-4 !pb-2 flex items-center gap-1 md:hidden">
+                        <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden bg-transparent">
+                            <img src={logo} alt="Logo" className="w-full h-full object-cover" />
                         </div>
                         <span className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                             TalkTogether
