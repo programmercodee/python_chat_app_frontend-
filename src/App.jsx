@@ -15,12 +15,25 @@ function ProtectedRoute({ children }) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0f0f0f]">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-[#3b82f6] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-[#a1a1aa]">Loading...</p>
+      <div className="min-h-screen flex items-center justify-center bg-[#050816]">
+        <div className="flex flex-col items-center gap-4">
+          {/* Spinner */}
+          <div className="w-12 h-12 border-4 border-[#1f2937] border-t-[#3b82f6] rounded-full animate-spin" />
+
+          {/* Main text */}
+          <p className="text-base font-medium text-white tracking-wide">
+            Loading your dashboard...
+          </p>
+
+          {/* Sub text */}
+          <p className="text-xs text-[#9ca3af] max-w-xs text-center">
+            This may take a few seconds. Please do not close or refresh this window.
+          </p>
         </div>
       </div>
+
+
+
     );
   }
 
