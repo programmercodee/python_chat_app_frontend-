@@ -7,6 +7,7 @@ import { MessageCircle, Plus, Send, Paperclip, Smile, ArrowLeft, Clock, Search }
 import { useAuthStore, useChatStore, useSocketStore } from '../store';
 import { Avatar } from '../components/ui';
 import logo from '../assets/logo.png';
+import TypingIndicator from '../components/chat/TypingIndicator';
 
 // Helper to decode base64 message
 // Helper to decode base64 message (Unicode safe)
@@ -609,34 +610,7 @@ export default function Chat() {
 
                                     {/* Typing indicator */}
                                     {isOtherTyping && (
-                                        <div className="flex justify-start !mb-2">
-                                            <div className="!py-3.5 !px-[18px] rounded-[18px] rounded-bl-[4px] bg-[#1a1a1a] flex items-center gap-1.5">
-                                                <span style={{
-                                                    width: '10px',
-                                                    height: '10px',
-                                                    backgroundColor: '#10b981',
-                                                    borderRadius: '50%',
-                                                    display: 'inline-block',
-                                                    animation: 'typingBounce 1.2s ease-in-out infinite',
-                                                }} />
-                                                <span style={{
-                                                    width: '10px',
-                                                    height: '10px',
-                                                    backgroundColor: '#10b981',
-                                                    borderRadius: '50%',
-                                                    display: 'inline-block',
-                                                    animation: 'typingBounce 1.2s ease-in-out 0.2s infinite',
-                                                }} />
-                                                <span style={{
-                                                    width: '10px',
-                                                    height: '10px',
-                                                    backgroundColor: '#10b981',
-                                                    borderRadius: '50%',
-                                                    display: 'inline-block',
-                                                    animation: 'typingBounce 1.2s ease-in-out 0.4s infinite',
-                                                }} />
-                                            </div>
-                                        </div>
+                                         <TypingIndicator />
                                     )}
 
                                     <div ref={messagesEndRef} />

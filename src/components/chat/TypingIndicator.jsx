@@ -1,16 +1,33 @@
-/**
- * Typing indicator component.
- */
+import React, { useState, useEffect } from 'react';
 
-export default function TypingIndicator({ username }) {
+export default function TypingIndicator() {
+    const [text, setText] = useState('');
+    const fullText = 'typing...';
+
+    useEffect(() => {
+        let index = 0;
+        const timer = setInterval(() => {
+            // Type out the text
+            if (index <= fullText.length) {
+                setText(fullText.slice(0, index));
+                index++;
+            } else {
+                // Reset when done
+                index = 0;
+            }
+        }, 200);
+
+        return () => clearInterval(timer);
+    }, []);
+
     return (
-        <div className="flex items-center gap-2 px-4 py-2 text-[#a1a1aa] text-sm">
-            <div className="flex gap-1">
-                <span className="w-2 h-2 bg-[#a1a1aa] rounded-full typing-dot" />
-                <span className="w-2 h-2 bg-[#a1a1aa] rounded-full typing-dot" />
-                <span className="w-2 h-2 bg-[#a1a1aa] rounded-full typing-dot" />
+        <div className="flex justify-start !mb-2">
+            <div className="!py-2 !px-2 rounded-2xl rounded-bl-md bg-gray-900 border border-gray-700 shadow-2xl">
+                <div className="flex items-center">
+                    <span className="text-white font-mono text-sm">{text}</span>
+                    <span className="text-white font-mono text-sm ml-0.5 animate-blink">|</span>
+                </div>
             </div>
-            <span>{username} is typing...</span>
         </div>
     );
 }
