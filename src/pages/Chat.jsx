@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useState, useRef } from 'react';
-import { MessageCircle, Plus, Send, Paperclip, Smile, ArrowLeft, Clock, Search } from 'lucide-react';
+import { MessageCircle, Plus, Send, Paperclip, Smile, ArrowLeft, Clock, Search, Check, CheckCheck } from 'lucide-react';
 import { useAuthStore, useChatStore, useSocketStore } from '../store';
 import { Avatar } from '../components/ui';
 import logo from '../assets/logo.png';
@@ -69,6 +69,8 @@ export default function Chat() {
         setTyping,
         setUserOnline,
         clearUnreadCount,
+        updateMessageStatus,
+        confirmMessageSent,
         isLoading,
         isMessagesLoading
     } = useChatStore();
@@ -81,7 +83,8 @@ export default function Chat() {
         stopTyping,
         isUserOnline,
         requestOnlineStatus,
-        markRead
+        markRead,
+        confirmDelivery
     } = useSocketStore();
 
     const [messageText, setMessageText] = useState('');
@@ -151,6 +154,26 @@ export default function Chat() {
                 // Get current user id from localStorage since user might not be in closure
                 const currentUserId = localStorage.getItem('userId');
                 addMessage(msg, currentUserId);
+
+                // Send delivery confirmation to server (if message is from someone else)
+                if (msg.sender_id !== currentUserId) {
+                    const { confirmDelivery } = useSocketStore.getState();
+                    confirmDelivery(msg.id);
+                }
+            });
+
+            // Listen for message sent confirmation (ACK from server)
+            s.on('message_sent', (data) => {
+                console.log('Message sent confirmed:', data);
+                const { confirmMessageSent } = useChatStore.getState();
+                confirmMessageSent(data.nonce, data.message_id, data.status, data.created_at);
+            });
+
+            // Listen for message status updates (delivered/read)
+            s.on('message_status_update', (data) => {
+                console.log('Message status update:', data);
+                const { updateMessageStatus } = useChatStore.getState();
+                updateMessageStatus(data.message_id, data.status);
             });
 
             // Listen for typing events
@@ -572,35 +595,44 @@ export default function Chat() {
                             ) : (
                                 <>
                                     {messages.map((msg) => {
-                                        const isOwn = msg.sender_id === user?.id;
+                                        const isOwn = msg.sender_id === user?.id; // ✅ MUST BE HERE
                                         const messageContent = decodeMessage(msg.encrypted_content);
 
                                         return (
                                             <div
                                                 key={msg.id}
-                                                className="flex"
-                                                style={{ justifyContent: isOwn ? 'flex-end' : 'flex-start' }}
+                                                className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
                                             >
                                                 <div
-                                                    className="max-w-[70%] !py-3 !px-4 text-white"
+                                                    className={`max-w-[70%] !px-4 !py-3 text-sm text-white shadow-sm ${isOwn ? "rounded-2xl rounded-br-md" : "rounded-2xl rounded-bl-md"
+                                                        }`}
                                                     style={{
-                                                        borderRadius: isOwn ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                                                        backgroundColor: isOwn ? '#3b82f6' : '#1a1a1a',
-                                                        opacity: msg.isPending ? 0.7 : 1,
+                                                        backgroundColor: isOwn ? "#9a5a04" : "#161616",
+                                                        border: isOwn ? "1px solid #c27814" : "1px solid #262626",
                                                     }}
                                                 >
-                                                    <p className="text-sm break-words">{messageContent}</p>
+                                                    <p className="break-words leading-relaxed">
+                                                        {messageContent}
+                                                    </p>
+
                                                     <div
-                                                        className="text-[11px] !mt-1 opacity-70 flex items-center gap-1"
-                                                        style={{ justifyContent: isOwn ? 'flex-end' : 'flex-start' }}
+                                                        className={`!mt-1 flex items-center gap-1 text-[11px] ${isOwn ? "justify-end text-[#e5e7eb]" : "justify-start text-[#a1a1aa]"
+                                                            }`}
                                                     >
-                                                        {msg.isPending ? (
-                                                            <>
-                                                                <Clock className="w-3 h-3" />
-                                                                <span>Sending...</span>
-                                                            </>
-                                                        ) : (
-                                                            formatMessageTime(msg.created_at)
+                                                        {formatMessageTime(msg.created_at)}
+
+                                                        {isOwn && (
+                                                            <span className="!ml-1 flex items-center">
+                                                                {msg.isPending || msg.status === "pending" ? (
+                                                                    <Clock className="w-4 h-4 text-[#a1a1aa]" />
+                                                                ) : msg.status === "read" ? (
+                                                                    <CheckCheck className="w-4 h-4 text-[#5eead4]" />
+                                                                ) : msg.status === "delivered" ? (
+                                                                    <CheckCheck className="w-4 h-4 text-[#e5e7eb]" />
+                                                                ) : (
+                                                                    <Check className="w-4 h-4 text-[#e5e7eb]" />
+                                                                )}
+                                                            </span>
                                                         )}
                                                     </div>
                                                 </div>
@@ -608,9 +640,10 @@ export default function Chat() {
                                         );
                                     })}
 
+
                                     {/* Typing indicator */}
                                     {isOtherTyping && (
-                                         <TypingIndicator />
+                                        <TypingIndicator />
                                     )}
 
                                     <div ref={messagesEndRef} />

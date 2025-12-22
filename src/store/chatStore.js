@@ -63,7 +63,7 @@ const useChatStore = create((set, get) => ({
     // Add a pending message (for optimistic UI)
     addPendingMessage: (message) => {
         set((state) => ({
-            messages: [...state.messages, { ...message, isPending: true }],
+            messages: [...state.messages, { ...message, isPending: true, status: 'pending' }],
         }));
     },
 
@@ -88,11 +88,11 @@ const useChatStore = create((set, get) => ({
             if (pendingIndex !== -1) {
                 // Replace pending message with confirmed message
                 updatedMessages = [...state.messages];
-                updatedMessages[pendingIndex] = { ...message, isPending: false };
+                updatedMessages[pendingIndex] = { ...message, isPending: false, status: message.status || 'sent' };
             } else {
                 // Only add if it's for the active conversation
                 updatedMessages = isActiveConversation
-                    ? [...state.messages, message]
+                    ? [...state.messages, { ...message, status: message.status || 'sent' }]
                     : state.messages;
             }
 
@@ -147,20 +147,42 @@ const useChatStore = create((set, get) => ({
         });
     },
 
-    // Mark messages as read
+    // Mark messages as read (updates local state)
     markAsRead: async (messageIds) => {
         try {
             await messagesApi.markAsRead(messageIds);
             set((state) => ({
                 messages: state.messages.map(msg =>
                     messageIds.includes(msg.id)
-                        ? { ...msg, is_read: true }
+                        ? { ...msg, status: 'read', is_read: true }
                         : msg
                 ),
             }));
         } catch (error) {
             console.error('Failed to mark as read:', error);
         }
+    },
+
+    // Update message status (from socket events)
+    updateMessageStatus: (messageId, status) => {
+        set((state) => ({
+            messages: state.messages.map(msg =>
+                msg.id === messageId
+                    ? { ...msg, status, is_delivered: status !== 'pending' && status !== 'sent', is_read: status === 'read' }
+                    : msg
+            ),
+        }));
+    },
+
+    // Confirm message was sent by server (replace pending with real message)
+    confirmMessageSent: (nonce, messageId, status, createdAt) => {
+        set((state) => ({
+            messages: state.messages.map(msg =>
+                msg.isPending && msg.nonce === nonce
+                    ? { ...msg, id: messageId, status, isPending: false, created_at: createdAt }
+                    : msg
+            ),
+        }));
     },
 
     // Clear unread count for a conversation

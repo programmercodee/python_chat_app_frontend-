@@ -135,8 +135,16 @@ const useSocketStore = create((set, get) => ({
     // Mark messages as read
     markRead: (messageIds) => {
         const { socket } = get();
-        if (socket) {
+        if (socket && messageIds.length > 0) {
             socket.emit('message_read', { message_ids: messageIds });
+        }
+    },
+
+    // Confirm message delivery to server
+    confirmDelivery: (messageId) => {
+        const { socket } = get();
+        if (socket) {
+            socket.emit('message_delivered', { message_id: messageId });
         }
     },
 }));
