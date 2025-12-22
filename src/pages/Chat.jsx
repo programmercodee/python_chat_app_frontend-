@@ -8,11 +8,23 @@ import { useAuthStore, useChatStore, useSocketStore } from '../store';
 import { Avatar } from '../components/ui';
 
 // Helper to decode base64 message
+// Helper to decode base64 message (Unicode safe)
 const decodeMessage = (encryptedContent) => {
     try {
-        return atob(encryptedContent);
-    } catch {
-        return '🔒 Unable to decrypt';
+        // Handle standard base64 and URL-safe base64
+        const base64 = encryptedContent.replace(/-/g, '+').replace(/_/g, '/');
+        // Decode base64 to percent-encoded string, then decode URI component
+        return decodeURIComponent(atob(base64).split('').map(function (c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+    } catch (e) {
+        console.error('Decryption failed:', e);
+        // Fallback for old messages
+        try {
+            return atob(encryptedContent);
+        } catch {
+            return '🔒 Unable to decrypt';
+        }
     }
 };
 
@@ -267,7 +279,15 @@ export default function Chat() {
             clearTimeout(typingTimeoutRef.current);
         }
 
-        const encryptedContent = btoa(messageText);
+        // Unicode-safe base64 encoding
+        const encodeUnicode = (str) => {
+            return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
+                function toSolidBytes(match, p1) {
+                    return String.fromCharCode('0x' + p1);
+                }));
+        };
+
+        const encryptedContent = encodeUnicode(messageText);
         const nonce = btoa(Date.now().toString());
 
         // Create a pending message for optimistic UI (shows immediately with clock icon)
