@@ -1,16 +1,20 @@
 /**
  * Register page component.
+ * Fully responsive with Tailwind CSS and Google OAuth.
  */
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { MessageCircle, Mail, Lock, User, ArrowRight, Shield, Zap, Users } from 'lucide-react';
+import { MessageCircle, Mail, Lock, User, ArrowRight, Shield, Zap, Users, Loader2 } from 'lucide-react';
 import { useAuthStore } from '../store';
 import toast from 'react-hot-toast';
 
+// Google Client ID
+const GOOGLE_CLIENT_ID = '657657742264-l4dkb28fhta8i6o2tn88boihmtla80mj.apps.googleusercontent.com';
+
 export default function Register() {
     const navigate = useNavigate();
-    const { register, isLoading, error, clearError } = useAuthStore();
+    const { register, loginWithGoogle, isLoading, error, clearError } = useAuthStore();
 
     const [email, setEmail] = useState('');
     const [username, setUsername] = useState('');
@@ -41,41 +45,41 @@ export default function Register() {
         }
     };
 
-    const inputStyle = {
-        width: '100%',
-        paddingLeft: '48px',
-        paddingRight: '16px',
-        paddingTop: '14px',
-        paddingBottom: '14px',
-        borderRadius: '12px',
-        backgroundColor: '#0a0a0a',
-        border: '1px solid #262626',
-        color: 'white',
-        fontSize: '14px',
-        outline: 'none',
+    // Google OAuth success handler
+    const handleGoogleSuccess = async (response) => {
+        clearError();
+        const result = await loginWithGoogle(response.credential);
+
+        if (result.success) {
+            toast.success('Welcome to TalkTogether!');
+            navigate('/');
+        } else {
+            toast.error(result.error);
+        }
     };
 
-    const smallInputStyle = {
-        ...inputStyle,
-        paddingLeft: '44px',
-    };
+    // Google Sign-In button ref
+    const googleButtonRef = useRef(null);
 
-    const iconStyle = {
-        position: 'absolute',
-        left: '16px',
-        top: '50%',
-        transform: 'translateY(-50%)',
-        width: '20px',
-        height: '20px',
-        color: '#52525b',
-    };
-
-    const smallIconStyle = {
-        ...iconStyle,
-        left: '14px',
-        width: '18px',
-        height: '18px',
-    };
+    // Initialize Google Sign-In
+    useEffect(() => {
+        if (window.google && googleButtonRef.current) {
+            window.google.accounts.id.initialize({
+                client_id: GOOGLE_CLIENT_ID,
+                callback: handleGoogleSuccess,
+            });
+            window.google.accounts.id.renderButton(
+                googleButtonRef.current,
+                {
+                    theme: 'filled_black',
+                    size: 'large',
+                    width: 320,
+                    text: 'signup_with',
+                    shape: 'rectangular',
+                }
+            );
+        }
+    }, []);
 
     const features = [
         { icon: Shield, title: 'Secure', desc: 'End-to-end encryption' },
@@ -84,72 +88,67 @@ export default function Register() {
     ];
 
     return (
-        <div style={{ minHeight: '100vh', display: 'flex', backgroundColor: '#0a0a0a' }}>
+        <div className="min-h-screen flex flex-col lg:flex-row overflow-hidden bg-[#0a0a0a]">
             {/* Left Side - Form */}
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-                <div style={{ width: '100%', maxWidth: '420px' }}>
+            <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8 order-2 lg:order-1 min-w-0">
+                <div className="w-full max-w-md min-w-0">
                     {/* Mobile Logo */}
-                    <div className="lg:hidden" style={{ textAlign: 'center', marginBottom: '32px' }}>
-                        <h1 className="text-4xl font-bold">TalkTogether</h1>
+                    <div className="lg:hidden text-center mb-6 sm:mb-8">
+                        <h1 className="text-3xl sm:text-4xl font-bold text-white">TalkTogether</h1>
                     </div>
 
-                    <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-                        <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: 'white', marginBottom: '8px' }}>Create account</h2>
-                        <p style={{ color: '#71717a' }}>Join thousands of users on TalkTogether</p>
+                    <div className="text-center mb-6 sm:mb-8">
+                        <h2 className="text-lg sm:text-xl font-bold text-white mb-2">Create account</h2>
+                        <p className="text-zinc-500 text-sm sm:text-base">Join thousands of users on TalkTogether</p>
                     </div>
 
                     {/* Form Card */}
-                    <div style={{
-                        backgroundColor: '#111111',
-                        border: '1px solid #1f1f1f',
-                        borderRadius: '16px',
-                        padding: '32px',
-                    }}>
+                    <div className="bg-[#111111] border border-[#1f1f1f] rounded-2xl p-5 sm:p-8">
                         <form onSubmit={handleSubmit}>
-                            <div style={{ marginBottom: '16px' }}>
-                                <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#a1a1aa', marginBottom: '8px' }}>
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-zinc-400 mb-2">
                                     Email
                                 </label>
-                                <div style={{ position: 'relative' }}>
-                                    <Mail style={iconStyle} />
+                                <div className="relative">
+                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-600" />
                                     <input
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         placeholder="you@example.com"
                                         required
-                                        style={inputStyle}
+                                        className="w-full pl-12 pr-4 py-3 sm:py-3.5 rounded-xl bg-[#0a0a0a] border border-[#262626] text-white text-sm outline-none focus:border-blue-500 transition-colors"
                                     />
                                 </div>
                             </div>
 
-                            <div style={{ marginBottom: '16px' }}>
-                                <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#a1a1aa', marginBottom: '8px' }}>
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-zinc-400 mb-2">
                                     Username
                                 </label>
-                                <div style={{ position: 'relative' }}>
-                                    <User style={iconStyle} />
+                                <div className="relative">
+                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-600" />
                                     <input
                                         type="text"
                                         value={username}
                                         onChange={(e) => setUsername(e.target.value)}
                                         placeholder="Choose a username"
                                         required
-                                        pattern="[a-zA-Z0-9_]+"
+                                        pattern="[a-zA-Z0-9_ ]+"
                                         minLength={3}
                                         maxLength={50}
-                                        style={inputStyle}
+                                        className="w-full pl-12 pr-4 py-3 sm:py-3.5 rounded-xl bg-[#0a0a0a] border border-[#262626] text-white text-sm outline-none focus:border-blue-500 transition-colors"
                                     />
                                 </div>
                             </div>
 
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
                                 <div>
-                                    <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#a1a1aa', marginBottom: '8px' }}>
+                                    <label className="block text-sm font-medium text-zinc-400 mb-2">
                                         Password
                                     </label>
-                                    <div style={{ position: 'relative' }}>
-                                        <Lock style={smallIconStyle} />
+                                    <div className="relative">
+                                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" />
                                         <input
                                             type="password"
                                             value={password}
@@ -157,40 +156,31 @@ export default function Register() {
                                             placeholder="Min 8 chars"
                                             required
                                             minLength={8}
-                                            style={smallInputStyle}
+                                            className="w-full pl-10 pr-3 py-3 sm:py-3.5 rounded-xl bg-[#0a0a0a] border border-[#262626] text-white text-sm outline-none focus:border-blue-500 transition-colors"
                                         />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#a1a1aa', marginBottom: '8px' }}>
+                                    <label className="block text-sm font-medium text-zinc-400 mb-2">
                                         Confirm
                                     </label>
-                                    <div style={{ position: 'relative' }}>
-                                        <Lock style={smallIconStyle} />
+                                    <div className="relative">
+                                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" />
                                         <input
                                             type="password"
                                             value={confirmPassword}
                                             onChange={(e) => setConfirmPassword(e.target.value)}
                                             placeholder="Repeat"
                                             required
-                                            style={smallInputStyle}
+                                            className="w-full pl-10 pr-3 py-3 sm:py-3.5 rounded-xl bg-[#0a0a0a] border border-[#262626] text-white text-sm outline-none focus:border-blue-500 transition-colors"
                                         />
                                     </div>
                                 </div>
                             </div>
 
                             {error && (
-                                <div style={{
-                                    padding: '12px',
-                                    borderRadius: '8px',
-                                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                                    border: '1px solid rgba(239, 68, 68, 0.2)',
-                                    color: '#ef4444',
-                                    fontSize: '14px',
-                                    textAlign: 'center',
-                                    marginBottom: '16px',
-                                }}>
+                                <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-sm text-center mb-4">
                                     {error}
                                 </div>
                             )}
@@ -198,50 +188,37 @@ export default function Register() {
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                style={{
-                                    width: '100%',
-                                    padding: '14px 16px',
-                                    borderRadius: '12px',
-                                    background: 'linear-gradient(135deg, #10b981, #3b82f6)',
-                                    color: 'white',
-                                    fontWeight: '500',
-                                    fontSize: '16px',
-                                    border: 'none',
-                                    cursor: isLoading ? 'not-allowed' : 'pointer',
-                                    opacity: isLoading ? 0.5 : 1,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '8px',
-                                    boxShadow: '0 10px 25px rgba(16, 185, 129, 0.25)',
-                                }}
+                                className="w-full py-3 sm:py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-blue-500 text-white font-medium flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isLoading ? (
-                                    <div style={{
-                                        width: '20px',
-                                        height: '20px',
-                                        border: '2px solid rgba(255,255,255,0.3)',
-                                        borderTopColor: 'white',
-                                        borderRadius: '50%',
-                                        animation: 'spin 1s linear infinite',
-                                    }} />
+                                    <Loader2 className="w-5 h-5 animate-spin" />
                                 ) : (
                                     <>
                                         Create account
-                                        <ArrowRight style={{ width: '20px', height: '20px' }} />
+                                        <ArrowRight className="w-5 h-5" />
                                     </>
                                 )}
                             </button>
 
-                            <p style={{ fontSize: '12px', color: '#52525b', textAlign: 'center', marginTop: '16px' }}>
+                            <p className="text-xs text-zinc-600 text-center mt-4">
                                 By signing up, you agree to our Terms of Service and Privacy Policy
                             </p>
                         </form>
 
-                        <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid #1f1f1f', textAlign: 'center' }}>
-                            <p style={{ color: '#71717a' }}>
+                        {/* Divider */}
+                        <div className="flex items-center gap-4 my-5 sm:my-6">
+                            <div className="flex-1 h-px bg-[#262626]" />
+                            <span className="text-zinc-600 text-sm">or</span>
+                            <div className="flex-1 h-px bg-[#262626]" />
+                        </div>
+
+                        {/* Google Sign-up */}
+                        <div ref={googleButtonRef} className="flex justify-center" />
+
+                        <div className="mt-5 sm:mt-6 pt-5 sm:pt-6 border-t border-[#1f1f1f] text-center">
+                            <p className="text-zinc-500 text-sm sm:text-base">
                                 Already have an account?{' '}
-                                <Link to="/login" style={{ color: '#3b82f6', fontWeight: '500', textDecoration: 'none' }}>
+                                <Link to="/login" className="text-blue-500 font-medium hover:text-blue-400">
                                     Sign in
                                 </Link>
                             </p>
@@ -251,80 +228,50 @@ export default function Register() {
             </div>
 
             {/* Right Side - Branding (hidden on mobile) */}
-            <div className="hidden lg:flex" style={{ width: '50%', position: 'relative', overflow: 'hidden' }}>
+            <div className="hidden lg:flex w-1/2 relative overflow-hidden order-1 lg:order-2">
                 {/* Gradient Background */}
-                <div style={{
-                    position: 'absolute',
-                    inset: 0,
-                    background: 'linear-gradient(135deg, #10b981 0%, #3b82f6 50%, #8b5cf6 100%)',
-                }} />
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 via-blue-500 to-purple-500" />
 
                 {/* Pattern Overlay */}
-                <div style={{
-                    position: 'absolute',
-                    inset: 0,
-                    opacity: 0.1,
-                    backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
-                    backgroundSize: '32px 32px',
-                }} />
+                <div
+                    className="absolute inset-0 opacity-10"
+                    style={{
+                        backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
+                        backgroundSize: '32px 32px',
+                    }}
+                />
 
                 {/* Content */}
-                <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '64px', color: 'white' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px' }}>
-                        <div style={{
-                            width: '48px',
-                            height: '48px',
-                            borderRadius: '12px',
-                            backgroundColor: 'rgba(255,255,255,0.2)',
-                            backdropFilter: 'blur(8px)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}>
-                            <MessageCircle style={{ width: '24px', height: '24px' }} />
+                <div className="relative z-10 flex flex-col justify-center p-16 text-white">
+                    <div className="flex items-center gap-3 mb-8">
+                        <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-lg flex items-center justify-center">
+                            <MessageCircle className="w-6 h-6" />
                         </div>
-                        <span style={{ fontSize: '24px', fontWeight: 'bold' }}>TalkTogether</span>
+                        <span className="text-2xl font-bold">TalkTogether</span>
                     </div>
 
-                    <h1 style={{ fontSize: '48px', fontWeight: 'bold', lineHeight: '1.1', marginBottom: '24px' }}>
+                    <h1 className="text-5xl font-bold leading-tight mb-6">
                         Start your<br />
-                        <span style={{ opacity: 0.8 }}>journey today</span>
+                        <span className="opacity-80">journey today</span>
                     </h1>
 
-                    <p style={{ fontSize: '18px', opacity: 0.7, maxWidth: '400px', marginBottom: '48px' }}>
+                    <p className="text-lg opacity-70 max-w-md mb-12">
                         Join our community and experience the future of secure messaging.
                     </p>
 
                     {/* Feature Cards */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div className="flex flex-col gap-4">
                         {features.map((feature, i) => (
                             <div
                                 key={i}
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '16px',
-                                    padding: '16px',
-                                    borderRadius: '12px',
-                                    backgroundColor: 'rgba(255,255,255,0.1)',
-                                    backdropFilter: 'blur(8px)',
-                                    border: '1px solid rgba(255,255,255,0.1)',
-                                }}
+                                className="flex items-center gap-4 p-4 rounded-xl bg-white/10 backdrop-blur-lg border border-white/10"
                             >
-                                <div style={{
-                                    width: '40px',
-                                    height: '40px',
-                                    borderRadius: '8px',
-                                    backgroundColor: 'rgba(255,255,255,0.2)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                }}>
-                                    <feature.icon style={{ width: '20px', height: '20px' }} />
+                                <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
+                                    <feature.icon className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <div style={{ fontWeight: '600' }}>{feature.title}</div>
-                                    <div style={{ fontSize: '14px', opacity: 0.6 }}>{feature.desc}</div>
+                                    <div className="font-semibold">{feature.title}</div>
+                                    <div className="text-sm opacity-60">{feature.desc}</div>
                                 </div>
                             </div>
                         ))}
@@ -332,28 +279,8 @@ export default function Register() {
                 </div>
 
                 {/* Floating Elements */}
-                <div style={{
-                    position: 'absolute',
-                    top: '80px',
-                    right: '80px',
-                    width: '96px',
-                    height: '96px',
-                    backgroundColor: 'rgba(255,255,255,0.1)',
-                    borderRadius: '24px',
-                    backdropFilter: 'blur(8px)',
-                    transform: 'rotate(12deg)',
-                }} />
-                <div style={{
-                    position: 'absolute',
-                    bottom: '80px',
-                    right: '64px',
-                    width: '64px',
-                    height: '64px',
-                    backgroundColor: 'rgba(255,255,255,0.1)',
-                    borderRadius: '16px',
-                    backdropFilter: 'blur(8px)',
-                    transform: 'rotate(-12deg)',
-                }} />
+                <div className="absolute top-20 right-20 w-24 h-24 bg-white/10 rounded-3xl backdrop-blur-lg rotate-12" />
+                <div className="absolute bottom-20 right-16 w-16 h-16 bg-white/10 rounded-2xl backdrop-blur-lg -rotate-12" />
             </div>
         </div>
     );

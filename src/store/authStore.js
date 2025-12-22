@@ -40,6 +40,32 @@ const useAuthStore = create((set, get) => ({
         }
     },
 
+    // Login with Google OAuth
+    loginWithGoogle: async (idToken) => {
+        set({ isLoading: true, error: null });
+        try {
+            // Send Google ID token to backend for verification
+            const data = await authApi.googleAuth(idToken);
+
+            // Store tokens (our JWT, not Google's)
+            localStorage.setItem('accessToken', data.access_token);
+            localStorage.setItem('refreshToken', data.refresh_token);
+
+            // Get user data
+            const user = await authApi.me();
+
+            // Store user ID for socket handlers
+            localStorage.setItem('userId', user.id);
+
+            set({ user, isAuthenticated: true, isLoading: false });
+            return { success: true };
+        } catch (error) {
+            const message = error.response?.data?.detail || 'Google login failed';
+            set({ error: message, isLoading: false });
+            return { success: false, error: message };
+        }
+    },
+
     // Register new user
     register: async (email, username, password) => {
         set({ isLoading: true, error: null });

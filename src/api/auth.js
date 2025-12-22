@@ -34,4 +34,10 @@ export const authApi = {
         const response = await api.get('/auth/me');
         return response.data;
     },
+
+    // Google OAuth
+    googleAuth: async (idToken) => {
+        const response = await api.post('/auth/google', { id_token: idToken });
+        return response.data;
+    },
 };
