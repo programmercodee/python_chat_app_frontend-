@@ -3,7 +3,7 @@
  */
 
 import { useState, useRef } from 'react';
-import { User, Mail, Key, LogOut, Shield, Bell, Palette, Camera, Loader2 } from 'lucide-react';
+import { User, Mail, Key, LogOut, Shield, Bell, Palette, Camera, Loader2, Edit2 } from 'lucide-react';
 import { Avatar } from '../components/ui';
 import { useAuthStore, useSocketStore } from '../store';
 import { usersApi } from '../api';
@@ -115,14 +115,26 @@ export default function Settings() {
                                 size="xl"
                             />
 
-                            {/* Camera Overlay (shows on hover) */}
-                            <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                {isUploading ? (
-                                    <Loader2 className="w-6 h-6 text-white animate-spin" />
-                                ) : (
+                            {/* Loader Overlay (Always visible when uploading) */}
+                            {isUploading && (
+                                <div className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center">
+                                    <Loader2 className="w-8 h-8 text-white animate-spin" />
+                                </div>
+                            )}
+
+                            {/* Camera Overlay (Shows on hover when not uploading) */}
+                            {!isUploading && (
+                                <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                     <Camera className="w-6 h-6 text-white" />
-                                )}
-                            </div>
+                                </div>
+                            )}
+
+                            {/* Edit Badge (Always visible when not uploading) */}
+                            {!isUploading && (
+                                <div className="absolute bottom-0 right-0 p-1.5 bg-blue-500 rounded-full border-[3px] border-[#111111] text-white shadow-sm">
+                                    <Edit2 className="w-3.5 h-3.5" />
+                                </div>
+                            )}
                         </div>
 
                         {/* Hidden File Input */}
