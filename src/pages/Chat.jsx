@@ -68,7 +68,8 @@ export default function Chat() {
         setTyping,
         setUserOnline,
         clearUnreadCount,
-        isLoading
+        isLoading,
+        isMessagesLoading
     } = useChatStore();
     const {
         socket,
@@ -550,9 +551,17 @@ export default function Chat() {
 
                         {/* Messages Area */}
                         <div className="messages-area flex-1 overflow-y-auto !p-6 flex flex-col gap-2">
-                            {isLoading ? (
-                                <div className="flex items-center justify-center h-full text-[#71717a]">
-                                    Loading messages...
+                            {isMessagesLoading ? (
+                                <div className="flex flex-col items-center justify-center h-full text-[#71717a]">
+                                    <div style={{
+                                        width: '40px',
+                                        height: '40px',
+                                        border: '3px solid #262626',
+                                        borderTop: '3px solid #3b82f6',
+                                        borderRadius: '50%',
+                                        animation: 'spin 1s linear infinite',
+                                    }} />
+                                    <p className="!mt-4">Loading messages...</p>
                                 </div>
                             ) : messages.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center h-full text-[#52525b]">
@@ -857,6 +866,6 @@ export default function Chat() {
                     display: none !important;
                 }
             `}</style>
-        </div>
+        </div >
     );
 }

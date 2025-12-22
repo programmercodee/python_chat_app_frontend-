@@ -12,6 +12,7 @@ const useChatStore = create((set, get) => ({
     activeConversation: null,
     messages: [],
     isLoading: false,
+    isMessagesLoading: false,
     typingUsers: {}, // { conversationId: [userId, ...] }
 
     // Actions
@@ -44,17 +45,18 @@ const useChatStore = create((set, get) => ({
         }
 
         const conversation = get().conversations.find(c => c.id === conversationId);
-        // Set conversation immediately, don't show loading (fetch in background)
-        set({ activeConversation: conversation, messages: [] });
+        // Set conversation immediately, clear messages, and show loading
+        set({ activeConversation: conversation, messages: [], isMessagesLoading: true });
 
         try {
             const data = await messagesApi.getByConversation(conversationId);
             // Only update if still on same conversation
             if (get().activeConversation?.id === conversationId) {
-                set({ messages: data.messages || [] });
+                set({ messages: data.messages || [], isMessagesLoading: false });
             }
         } catch (error) {
             console.error('Failed to fetch messages:', error);
+            set({ isMessagesLoading: false });
         }
     },
 
