@@ -2,25 +2,77 @@
  * Settings page component.
  */
 
-import { useState } from 'react';
-import { User, Mail, Key, LogOut, Shield, Bell, Palette } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { User, Mail, Key, LogOut, Shield, Bell, Palette, Camera, Loader2 } from 'lucide-react';
 import { Avatar } from '../components/ui';
 import { useAuthStore, useSocketStore } from '../store';
 import { usersApi } from '../api';
 import toast from 'react-hot-toast';
 
 export default function Settings() {
-    const { user, logout } = useAuthStore();
+    const { user, logout, setUser } = useAuthStore();
     const { disconnect } = useSocketStore();
     const [username, setUsername] = useState(user?.username || '');
     const [isLoading, setIsLoading] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+
+    // Hidden file input reference
+    const fileInputRef = useRef(null);
+
+    // Handle avatar upload
+    const handleAvatarClick = () => {
+        // Trigger the hidden file input
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Validate file type
+        const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        if (!validTypes.includes(file.type)) {
+            toast.error('Please select a valid image (JPG, PNG, WebP, GIF)');
+            return;
+        }
+
+        // Validate file size (5MB max)
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error('Image too large. Maximum size is 5MB.');
+            return;
+        }
+
+        setIsUploading(true);
+        try {
+            // Upload to server
+            const result = await usersApi.uploadAvatar(file);
+
+            // Update local user state with new avatar URL
+            setUser({ ...user, avatar_url: result.avatar_url });
+
+            toast.success('Avatar updated!');
+        } catch (error) {
+            toast.error(error.response?.data?.detail || 'Failed to upload avatar');
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     const handleUpdateProfile = async (e) => {
         e.preventDefault();
+
+        // Don't call API if nothing changed
+        if (username === user?.username) {
+            toast('No changes to save', { icon: 'ℹ️' });
+            return;
+        }
+
         setIsLoading(true);
 
         try {
-            await usersApi.updateProfile({ username });
+            const updated = await usersApi.updateProfile({ username });
+            // Update local state with new username
+            setUser({ ...user, username: updated.username });
             toast.success('Profile updated!');
         } catch (error) {
             toast.error(error.response?.data?.detail || 'Failed to update profile');
@@ -36,98 +88,92 @@ export default function Settings() {
         logout();
     };
 
-    const sectionStyle = {
-        backgroundColor: '#111111',
-        border: '1px solid #1f1f1f',
-        borderRadius: '16px',
-        padding: '24px',
-        marginBottom: '24px',
-    };
-
-    const inputStyle = {
-        width: '100%',
-        padding: '14px 16px',
-        borderRadius: '12px',
-        backgroundColor: '#0a0a0a',
-        border: '1px solid #262626',
-        color: 'white',
-        fontSize: '14px',
-        outline: 'none',
-    };
-
-    const labelStyle = {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        fontSize: '14px',
-        fontWeight: '500',
-        color: '#a1a1aa',
-        marginBottom: '8px',
-    };
-
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: '#0a0a0a' }}>
+        <div className="flex flex-col h-full bg-[#0a0a0a]">
             {/* Header */}
-            <div style={{ padding: '24px', borderBottom: '1px solid #1f1f1f' }}>
-                <h1 style={{ fontSize: '28px', fontWeight: 'bold', color: 'white' }}>Settings</h1>
+            <div className="p-6 border-b border-[#1f1f1f]">
+                <h1 className="text-2xl font-bold text-white">Settings</h1>
             </div>
 
             {/* Content */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '24px', maxWidth: '600px' }}>
+            <div className="flex-1 overflow-y-auto p-6 max-w-xl">
                 {/* Profile Section */}
-                <section style={sectionStyle}>
-                    <h2 style={{ fontSize: '18px', fontWeight: '600', color: 'white', marginBottom: '20px' }}>Profile</h2>
+                <section className="bg-[#111111] border border-[#1f1f1f] rounded-2xl p-6 mb-6">
+                    <h2 className="text-lg font-semibold text-white mb-5">Profile</h2>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '24px' }}>
-                        <Avatar name={user?.username} size="xl" />
+                    {/* Avatar with Upload */}
+                    <div className="flex items-center gap-5 mb-6">
+                        {/* Clickable Avatar Container */}
+                        <div
+                            className="relative cursor-pointer group"
+                            onClick={handleAvatarClick}
+                        >
+                            {/* The Avatar */}
+                            <Avatar
+                                src={user?.avatar_url}
+                                name={user?.username}
+                                size="xl"
+                            />
+
+                            {/* Camera Overlay (shows on hover) */}
+                            <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                {isUploading ? (
+                                    <Loader2 className="w-6 h-6 text-white animate-spin" />
+                                ) : (
+                                    <Camera className="w-6 h-6 text-white" />
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Hidden File Input */}
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp,image/gif"
+                            className="hidden"
+                            onChange={handleFileChange}
+                        />
+
+                        {/* User Info */}
                         <div>
-                            <h3 style={{ fontSize: '18px', fontWeight: '500', color: 'white' }}>{user?.username}</h3>
-                            <p style={{ fontSize: '14px', color: '#71717a' }}>{user?.email}</p>
-                            <p style={{ fontSize: '12px', color: '#10b981', marginTop: '4px' }}>● Online</p>
+                            <h3 className="text-lg font-medium text-white">{user?.username}</h3>
+                            <p className="text-sm text-[#71717a]">{user?.email}</p>
+                            <p className="text-xs text-[#10b981] mt-1">● Online</p>
                         </div>
                     </div>
 
+                    {/* Profile Form */}
                     <form onSubmit={handleUpdateProfile}>
-                        <div style={{ marginBottom: '16px' }}>
-                            <label style={labelStyle}>
-                                <User style={{ width: '16px', height: '16px' }} />
+                        <div className="mb-4">
+                            <label className="flex items-center gap-2 text-sm font-medium text-[#a1a1aa] mb-2">
+                                <User className="w-4 h-4" />
                                 Username
                             </label>
                             <input
                                 type="text"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
-                                style={inputStyle}
+                                className="w-full py-3.5 px-4 rounded-xl bg-[#0a0a0a] border border-[#262626] text-white text-sm outline-none focus:border-blue-500 transition-colors"
                             />
                         </div>
 
-                        <div style={{ marginBottom: '20px' }}>
-                            <label style={labelStyle}>
-                                <Mail style={{ width: '16px', height: '16px' }} />
+                        <div className="mb-5">
+                            <label className="flex items-center gap-2 text-sm font-medium text-[#a1a1aa] mb-2">
+                                <Mail className="w-4 h-4" />
                                 Email
                             </label>
                             <input
                                 type="email"
                                 value={user?.email || ''}
                                 disabled
-                                style={{ ...inputStyle, color: '#52525b', cursor: 'not-allowed' }}
+                                className="w-full py-3.5 px-4 rounded-xl bg-[#0a0a0a] border border-[#262626] text-[#52525b] text-sm cursor-not-allowed"
                             />
                         </div>
 
                         <button
                             type="submit"
                             disabled={isLoading}
-                            style={{
-                                padding: '12px 24px',
-                                borderRadius: '12px',
-                                background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-                                border: 'none',
-                                color: 'white',
-                                fontSize: '14px',
-                                fontWeight: '500',
-                                cursor: isLoading ? 'not-allowed' : 'pointer',
-                                opacity: isLoading ? 0.5 : 1,
-                            }}
+                            className="py-3 px-6 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 text-white text-sm font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
                         >
                             {isLoading ? 'Saving...' : 'Save Changes'}
                         </button>
@@ -135,187 +181,83 @@ export default function Settings() {
                 </section>
 
                 {/* Security Section */}
-                <section style={sectionStyle}>
-                    <h2 style={{ fontSize: '18px', fontWeight: '600', color: 'white', marginBottom: '20px' }}>Security</h2>
+                <section className="bg-[#111111] border border-[#1f1f1f] rounded-2xl p-6 mb-6">
+                    <h2 className="text-lg font-semibold text-white mb-5">Security</h2>
 
-                    <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '16px',
-                        backgroundColor: '#0a0a0a',
-                        borderRadius: '12px',
-                        marginBottom: '12px',
-                    }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                            <div style={{
-                                width: '40px',
-                                height: '40px',
-                                borderRadius: '10px',
-                                backgroundColor: '#1a1a1a',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                            }}>
-                                <Key style={{ width: '20px', height: '20px', color: '#3b82f6' }} />
+                    <div className="flex items-center justify-between p-4 bg-[#0a0a0a] rounded-xl mb-3">
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-lg bg-[#1a1a1a] flex items-center justify-center">
+                                <Key className="w-5 h-5 text-blue-500" />
                             </div>
                             <div>
-                                <p style={{ fontSize: '14px', fontWeight: '500', color: 'white' }}>Encryption Key</p>
-                                <p style={{ fontSize: '13px', color: '#71717a' }}>Manage your E2E encryption keys</p>
+                                <p className="text-sm font-medium text-white">Encryption Key</p>
+                                <p className="text-[13px] text-[#71717a]">Manage your E2E encryption keys</p>
                             </div>
                         </div>
-                        <button style={{
-                            padding: '8px 16px',
-                            borderRadius: '10px',
-                            backgroundColor: '#1a1a1a',
-                            border: '1px solid #262626',
-                            color: '#a1a1aa',
-                            fontSize: '13px',
-                            cursor: 'pointer',
-                        }}>
+                        <button className="py-2 px-4 rounded-lg bg-[#1a1a1a] border border-[#262626] text-[#a1a1aa] text-[13px] hover:bg-[#262626] transition-colors">
                             Generate New
                         </button>
                     </div>
 
-                    <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '16px',
-                        backgroundColor: '#0a0a0a',
-                        borderRadius: '12px',
-                    }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                            <div style={{
-                                width: '40px',
-                                height: '40px',
-                                borderRadius: '10px',
-                                backgroundColor: '#1a1a1a',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                            }}>
-                                <Shield style={{ width: '20px', height: '20px', color: '#10b981' }} />
+                    <div className="flex items-center justify-between p-4 bg-[#0a0a0a] rounded-xl">
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-lg bg-[#1a1a1a] flex items-center justify-center">
+                                <Shield className="w-5 h-5 text-emerald-500" />
                             </div>
                             <div>
-                                <p style={{ fontSize: '14px', fontWeight: '500', color: 'white' }}>Two-Factor Auth</p>
-                                <p style={{ fontSize: '13px', color: '#71717a' }}>Add an extra layer of security</p>
+                                <p className="text-sm font-medium text-white">Two-Factor Auth</p>
+                                <p className="text-[13px] text-[#71717a]">Add an extra layer of security</p>
                             </div>
                         </div>
-                        <button style={{
-                            padding: '8px 16px',
-                            borderRadius: '10px',
-                            backgroundColor: '#1a1a1a',
-                            border: '1px solid #262626',
-                            color: '#a1a1aa',
-                            fontSize: '13px',
-                            cursor: 'pointer',
-                        }}>
+                        <button className="py-2 px-4 rounded-lg bg-[#1a1a1a] border border-[#262626] text-[#a1a1aa] text-[13px] hover:bg-[#262626] transition-colors">
                             Enable
                         </button>
                     </div>
                 </section>
 
                 {/* Preferences Section */}
-                <section style={sectionStyle}>
-                    <h2 style={{ fontSize: '18px', fontWeight: '600', color: 'white', marginBottom: '20px' }}>Preferences</h2>
+                <section className="bg-[#111111] border border-[#1f1f1f] rounded-2xl p-6 mb-6">
+                    <h2 className="text-lg font-semibold text-white mb-5">Preferences</h2>
 
-                    <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '16px',
-                        backgroundColor: '#0a0a0a',
-                        borderRadius: '12px',
-                        marginBottom: '12px',
-                    }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                            <div style={{
-                                width: '40px',
-                                height: '40px',
-                                borderRadius: '10px',
-                                backgroundColor: '#1a1a1a',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                            }}>
-                                <Bell style={{ width: '20px', height: '20px', color: '#f59e0b' }} />
+                    <div className="flex items-center justify-between p-4 bg-[#0a0a0a] rounded-xl mb-3">
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-lg bg-[#1a1a1a] flex items-center justify-center">
+                                <Bell className="w-5 h-5 text-amber-500" />
                             </div>
                             <div>
-                                <p style={{ fontSize: '14px', fontWeight: '500', color: 'white' }}>Notifications</p>
-                                <p style={{ fontSize: '13px', color: '#71717a' }}>Manage notification settings</p>
+                                <p className="text-sm font-medium text-white">Notifications</p>
+                                <p className="text-[13px] text-[#71717a]">Manage notification settings</p>
                             </div>
                         </div>
-                        <div style={{
-                            width: '44px',
-                            height: '24px',
-                            borderRadius: '12px',
-                            backgroundColor: '#3b82f6',
-                            padding: '2px',
-                            cursor: 'pointer',
-                        }}>
-                            <div style={{
-                                width: '20px',
-                                height: '20px',
-                                borderRadius: '50%',
-                                backgroundColor: 'white',
-                                marginLeft: '18px',
-                            }} />
+                        {/* Toggle Switch */}
+                        <div className="w-11 h-6 rounded-full bg-blue-500 p-0.5 cursor-pointer">
+                            <div className="w-5 h-5 rounded-full bg-white ml-auto" />
                         </div>
                     </div>
 
-                    <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '16px',
-                        backgroundColor: '#0a0a0a',
-                        borderRadius: '12px',
-                    }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                            <div style={{
-                                width: '40px',
-                                height: '40px',
-                                borderRadius: '10px',
-                                backgroundColor: '#1a1a1a',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                            }}>
-                                <Palette style={{ width: '20px', height: '20px', color: '#8b5cf6' }} />
+                    <div className="flex items-center justify-between p-4 bg-[#0a0a0a] rounded-xl">
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-lg bg-[#1a1a1a] flex items-center justify-center">
+                                <Palette className="w-5 h-5 text-purple-500" />
                             </div>
                             <div>
-                                <p style={{ fontSize: '14px', fontWeight: '500', color: 'white' }}>Theme</p>
-                                <p style={{ fontSize: '13px', color: '#71717a' }}>Dark mode enabled</p>
+                                <p className="text-sm font-medium text-white">Theme</p>
+                                <p className="text-[13px] text-[#71717a]">Dark mode enabled</p>
                             </div>
                         </div>
-                        <span style={{ fontSize: '13px', color: '#a1a1aa' }}>Dark</span>
+                        <span className="text-[13px] text-[#a1a1aa]">Dark</span>
                     </div>
                 </section>
 
                 {/* Account Section */}
-                <section style={sectionStyle}>
-                    <h2 style={{ fontSize: '18px', fontWeight: '600', color: 'white', marginBottom: '20px' }}>Account</h2>
+                <section className="bg-[#111111] border border-[#1f1f1f] rounded-2xl p-6 mb-6">
+                    <h2 className="text-lg font-semibold text-white mb-5">Account</h2>
 
                     <button
                         onClick={handleLogout}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px',
-                            width: '100%',
-                            padding: '16px',
-                            borderRadius: '12px',
-                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                            border: '1px solid rgba(239, 68, 68, 0.2)',
-                            color: '#ef4444',
-                            fontSize: '14px',
-                            fontWeight: '500',
-                            cursor: 'pointer',
-                            textAlign: 'left',
-                        }}
+                        className="flex items-center gap-3 w-full p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-sm font-medium hover:bg-red-500/20 transition-colors text-left"
                     >
-                        <LogOut style={{ width: '20px', height: '20px' }} />
+                        <LogOut className="w-5 h-5" />
                         Log out
                     </button>
                 </section>

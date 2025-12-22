@@ -1,6 +1,9 @@
 /**
  * Avatar component.
+ * Shows: avatar_url > default profile image
  */
+
+import defaultProfileImage from '../../assets/default_profile_image.avif';
 
 export default function Avatar({
     src,
@@ -23,34 +26,16 @@ export default function Avatar({
         xl: 'w-4 h-4 right-0.5 bottom-0.5',
     };
 
-    // Get initials from name
-    const initials = name
-        ? name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-        : '?';
-
-    // Generate color from name
-    const colors = [
-        'bg-[#3b82f6]', 'bg-[#10b981]', 'bg-[#f59e0b]',
-        'bg-[#ef4444]', 'bg-[#8b5cf6]', 'bg-[#ec4899]',
-    ];
-    const colorIndex = name ? name.charCodeAt(0) % colors.length : 0;
+    // Use provided src, or fall back to default profile image
+    const imageSrc = src || defaultProfileImage;
 
     return (
         <div className={`relative inline-block ${className}`}>
-            {src ? (
-                <img
-                    src={src}
-                    alt={name}
-                    className={`${sizes[size]} rounded-full object-cover`}
-                />
-            ) : (
-                <div className={`
-          ${sizes[size]} ${colors[colorIndex]}
-          rounded-full flex items-center justify-center font-medium text-white
-        `}>
-                    {initials}
-                </div>
-            )}
+            <img
+                src={imageSrc}
+                alt={name || 'Profile'}
+                className={`${sizes[size]} rounded-full object-cover`}
+            />
 
             {isOnline && (
                 <span className={`

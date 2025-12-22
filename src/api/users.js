@@ -44,4 +44,30 @@ export const usersApi = {
         const response = await api.get(`/users/${userId}/status`);
         return response.data;
     },
+
+    /**
+     * Upload a new avatar image.
+     * 
+     * HOW TO USE:
+     * const file = e.target.files[0];  // Get file from input
+     * const result = await usersApi.uploadAvatar(file);
+     * console.log(result.avatar_url);  // The new avatar URL
+     * 
+     * @param {File} file - The image file to upload
+     * @returns {Promise<{avatar_url: string}>} - The new avatar URL
+     */
+    uploadAvatar: async (file) => {
+        // Create FormData to send the file
+        const formData = new FormData();
+        formData.append('file', file);
+
+        // Send to the upload endpoint
+        const response = await api.post('/upload/avatar', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+
+        return response.data;
+    },
 };

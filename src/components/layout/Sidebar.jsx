@@ -122,6 +122,7 @@ export default function Sidebar() {
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <Avatar
+                        src={user?.avatar_url}
                         name={user?.username}
                         size="md"
                         isOnline={true}

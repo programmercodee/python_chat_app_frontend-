@@ -474,7 +474,7 @@ export default function Chat() {
                                             backgroundColor: isActive ? 'rgba(59, 130, 246, 0.1)' : '#1a1a1a',
                                         }}
                                     >
-                                        <Avatar name={name} isOnline={otherIsOnline} size="md" />
+                                        <Avatar src={other?.avatar_url} name={name} isOnline={otherIsOnline} size="md" />
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between">
                                                 <p
@@ -561,7 +561,7 @@ export default function Chat() {
                             >
                                 <ArrowLeft className="w-5 h-5" />
                             </button>
-                            <Avatar name={chatName} isOnline={isOtherOnline} size="md" />
+                            <Avatar src={otherMember?.avatar_url} name={chatName} isOnline={isOtherOnline} size="md" />
                             <div className="flex-1 min-w-0">
                                 <h2 className="text-base font-semibold text-white">{chatName}</h2>
                                 <p
@@ -714,7 +714,7 @@ export default function Chat() {
                                 border: '1px solid rgba(59, 130, 246, 0.2)',
                             }}
                         >
-                            <MessageCircle className="w-[60px] h-[60px] text-blue-500" />
+                            <img src={logo} className="w-[100px] h-[100px] text-blue-500" />
                         </div>
                         <h2 className="text-2xl font-semibold text-white !mb-2">
                             Welcome to TalkTogether

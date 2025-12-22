@@ -94,6 +94,12 @@ const useAuthStore = create((set, get) => ({
 
     // Clear error
     clearError: () => set({ error: null }),
+
+    /**
+     * Update user data in the store.
+     * Used when user updates their profile (e.g., avatar).
+     */
+    setUser: (userData) => set({ user: userData }),
 }));
 
 export default useAuthStore;
