@@ -206,9 +206,9 @@ export default function Login() {
                                     <input type="checkbox" className="w-4 h-4 rounded" />
                                     Remember me
                                 </label>
-                                <a href="#" className="text-blue-500 hover:text-blue-400">
+                                <Link to="/forgot-password" className="text-blue-500 hover:text-blue-400">
                                     Forgot password?
-                                </a>
+                                </Link>
                             </div>
 
                             {error && (

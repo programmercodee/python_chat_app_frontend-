@@ -7,7 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from './store';
 import { Layout } from './components/layout';
-import { Login, Register, ChooseUsername, Chat, Contacts, Settings } from './pages';
+import { Login, Register, ChooseUsername, ForgotPassword, Chat, Contacts, Settings } from './pages';
 
 // Protected route wrapper
 function ProtectedRoute({ children }) {
@@ -121,6 +121,14 @@ export default function App() {
           element={
             <PublicRoute>
               <ChooseUsername />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/forgot-password"
+          element={
+            <PublicRoute>
+              <ForgotPassword />
             </PublicRoute>
           }
         />
