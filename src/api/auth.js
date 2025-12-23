@@ -35,9 +35,15 @@ export const authApi = {
         return response.data;
     },
 
-    // Google OAuth
-    googleAuth: async (idToken) => {
-        const response = await api.post('/auth/google', { id_token: idToken });
+    // Google OAuth - Login (existing users only)
+    googleLogin: async (idToken) => {
+        const response = await api.post('/auth/google/login', { id_token: idToken });
+        return response.data;
+    },
+
+    // Google OAuth - Register (new users only)
+    googleRegister: async (idToken) => {
+        const response = await api.post('/auth/google/register', { id_token: idToken });
         return response.data;
     },
 };

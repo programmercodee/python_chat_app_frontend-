@@ -10,16 +10,21 @@ import { useAuthStore } from '../store';
 import toast from 'react-hot-toast';
 
 // Google Client ID
-const GOOGLE_CLIENT_ID = '657657742264-l4dkb28fhta8i6o2tn88boihmtla80mj.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = '87264285698-fje9uht65ugnmbfv710lperi6ejlp29a.apps.googleusercontent.com';
 
 export default function Register() {
     const navigate = useNavigate();
-    const { register, loginWithGoogle, isLoading, error, clearError } = useAuthStore();
+    const { register, registerWithGoogle, isLoading, error, clearError } = useAuthStore();
 
     const [email, setEmail] = useState('');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+
+    // Clear error on mount
+    useEffect(() => {
+        clearError();
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -48,7 +53,7 @@ export default function Register() {
     // Google OAuth success handler
     const handleGoogleSuccess = async (response) => {
         clearError();
-        const result = await loginWithGoogle(response.credential);
+        const result = await registerWithGoogle(response.credential);
 
         if (result.success) {
             toast.success('Welcome to TalkTogether!');
