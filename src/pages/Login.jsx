@@ -10,7 +10,8 @@ import { useAuthStore } from '../store';
 import toast from 'react-hot-toast';
 
 // Google Client ID
-const GOOGLE_CLIENT_ID = '657657742264-l4dkb28fhta8i6o2tn88boihmtla80mj.apps.googleusercontent.com';
+// const GOOGLE_CLIENT_ID = '657657742264-l4dkb28fhta8i6o2tn88boihmtla80mj.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = '87264285698-fje9uht65ugnmbfv710lperi6ejlp29a.apps.googleusercontent.com';
 
 export default function Login() {
     const navigate = useNavigate();
