@@ -7,7 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from './store';
 import { Layout } from './components/layout';
-import { Login, Register, Chat, Contacts, Settings } from './pages';
+import { Login, Register, ChooseUsername, Chat, Contacts, Settings } from './pages';
 
 // Protected route wrapper
 function ProtectedRoute({ children }) {
@@ -113,6 +113,14 @@ export default function App() {
           element={
             <PublicRoute>
               <Register />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/choose-username"
+          element={
+            <PublicRoute>
+              <ChooseUsername />
             </PublicRoute>
           }
         />

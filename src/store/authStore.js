@@ -188,10 +188,10 @@ const useAuthStore = create((set, get) => ({
     clearError: () => set({ error: null }),
 
     /**
-     * Update user data in the store.
-     * Used when user updates their profile (e.g., avatar).
+     * Update user data in the store and mark as authenticated.
+     * Used when user updates their profile or after manual token storage.
      */
-    setUser: (userData) => set({ user: userData }),
+    setUser: (userData) => set({ user: userData, isAuthenticated: true, isLoading: false }),
 }));
 
 export default useAuthStore;

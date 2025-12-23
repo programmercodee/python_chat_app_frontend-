@@ -1,12 +1,13 @@
 /**
  * Register page component.
- * Fully responsive with Tailwind CSS and Google OAuth.
+ * Collects email/password, then navigates to username selection page.
  */
 
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { MessageCircle, Mail, Lock, User, ArrowRight, Shield, Zap, Users, Loader2 } from 'lucide-react';
+import { MessageCircle, Mail, Lock, ArrowRight, Shield, Zap, Users, Loader2 } from 'lucide-react';
 import { useAuthStore } from '../store';
+import { authApi } from '../api';
 import toast from 'react-hot-toast';
 
 // Google Client ID
@@ -14,18 +15,20 @@ const GOOGLE_CLIENT_ID = '87264285698-fje9uht65ugnmbfv710lperi6ejlp29a.apps.goog
 
 export default function Register() {
     const navigate = useNavigate();
-    const { register, registerWithGoogle, isLoading, error, clearError } = useAuthStore();
+    const { isLoading, error, clearError } = useAuthStore();
 
+    // Form state
     const [email, setEmail] = useState('');
-    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [submitting, setSubmitting] = useState(false);
 
     // Clear error on mount
     useEffect(() => {
         clearError();
     }, []);
 
+    // Step 1: Validate email/password and navigate to username page
     const handleSubmit = async (e) => {
         e.preventDefault();
         clearError();
@@ -40,26 +43,37 @@ export default function Register() {
             return;
         }
 
-        const result = await register(email, username, password);
-
-        if (result.success) {
-            toast.success('Account created successfully!');
-            navigate('/');
-        } else {
-            toast.error(result.error);
-        }
+        // Navigate to username selection page with email data
+        navigate('/choose-username', {
+            state: {
+                type: 'email',
+                emailData: { email, password }
+            }
+        });
     };
 
     // Google OAuth success handler
     const handleGoogleSuccess = async (response) => {
         clearError();
-        const result = await registerWithGoogle(response.credential);
+        setSubmitting(true);
 
-        if (result.success) {
-            toast.success('Welcome to TalkTogether!');
-            navigate('/');
-        } else {
-            toast.error(result.error);
+        try {
+            // Step 1: Verify Google token and get pending data
+            const pendingData = await authApi.googleRegister(response.credential);
+
+            if (pendingData.pending) {
+                // Navigate to username selection page with Google data
+                navigate('/choose-username', {
+                    state: {
+                        type: 'google',
+                        pendingData: pendingData
+                    }
+                });
+            }
+        } catch (err) {
+            toast.error(err.response?.data?.detail || 'Google registration failed');
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -91,10 +105,8 @@ export default function Register() {
             return false;
         };
 
-        // Try immediately
         if (initGoogleButton()) return;
 
-        // Retry every 100ms for up to 3 seconds
         let attempts = 0;
         const maxAttempts = 30;
         const interval = setInterval(() => {
@@ -148,26 +160,6 @@ export default function Register() {
                                 </div>
                             </div>
 
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium text-zinc-400 mb-2">
-                                    Username
-                                </label>
-                                <div className="relative">
-                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-600" />
-                                    <input
-                                        type="text"
-                                        value={username}
-                                        onChange={(e) => setUsername(e.target.value)}
-                                        placeholder="Choose a username"
-                                        required
-                                        pattern="[a-zA-Z0-9_ ]+"
-                                        minLength={3}
-                                        maxLength={50}
-                                        className="w-full pl-12 pr-4 py-3 sm:py-3.5 rounded-xl bg-[#0a0a0a] border border-[#262626] text-white text-sm outline-none focus:border-blue-500 transition-colors"
-                                    />
-                                </div>
-                            </div>
-
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
                                 <div>
                                     <label className="block text-sm font-medium text-zinc-400 mb-2">
@@ -186,7 +178,6 @@ export default function Register() {
                                         />
                                     </div>
                                 </div>
-
                                 <div>
                                     <label className="block text-sm font-medium text-zinc-400 mb-2">
                                         Confirm
@@ -213,14 +204,14 @@ export default function Register() {
 
                             <button
                                 type="submit"
-                                disabled={isLoading}
+                                disabled={isLoading || submitting}
                                 className="w-full py-3 sm:py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-blue-500 text-white font-medium flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                {isLoading ? (
+                                {(isLoading || submitting) ? (
                                     <Loader2 className="w-5 h-5 animate-spin" />
                                 ) : (
                                     <>
-                                        Create account
+                                        Continue
                                         <ArrowRight className="w-5 h-5" />
                                     </>
                                 )}
@@ -240,13 +231,11 @@ export default function Register() {
 
                         {/* Google Sign-up */}
                         <div className="flex justify-center">
-                            {/* Hidden container for Google's button */}
                             <div
                                 ref={googleButtonRef}
                                 className={googleLoaded ? 'block' : 'hidden'}
                             />
 
-                            {/* Fallback button while Google SDK loads */}
                             {!googleLoaded && (
                                 <button
                                     type="button"
@@ -284,10 +273,8 @@ export default function Register() {
 
             {/* Right Side - Branding (hidden on mobile) */}
             <div className="hidden lg:flex w-1/2 relative overflow-hidden order-1 lg:order-2">
-                {/* Gradient Background */}
                 <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 via-blue-500 to-purple-500" />
 
-                {/* Pattern Overlay */}
                 <div
                     className="absolute inset-0 opacity-10"
                     style={{
@@ -296,7 +283,6 @@ export default function Register() {
                     }}
                 />
 
-                {/* Content */}
                 <div className="relative z-10 flex flex-col justify-center p-16 text-white">
                     <div className="flex items-center gap-3 mb-8">
                         <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-lg flex items-center justify-center">
@@ -306,21 +292,17 @@ export default function Register() {
                     </div>
 
                     <h1 className="text-5xl font-bold leading-tight mb-6">
-                        Start your<br />
-                        <span className="opacity-80">journey today</span>
+                        Join the<br />
+                        <span className="opacity-80">conversation</span>
                     </h1>
 
                     <p className="text-lg opacity-70 max-w-md mb-12">
-                        Join our community and experience the future of secure messaging.
+                        Connect with friends and communities. Share moments, ideas, and experiences in real-time.
                     </p>
 
-                    {/* Feature Cards */}
-                    <div className="flex flex-col gap-4">
+                    <div className="space-y-4">
                         {features.map((feature, i) => (
-                            <div
-                                key={i}
-                                className="flex items-center gap-4 p-4 rounded-xl bg-white/10 backdrop-blur-lg border border-white/10"
-                            >
+                            <div key={i} className="flex items-center gap-4">
                                 <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
                                     <feature.icon className="w-5 h-5" />
                                 </div>
@@ -333,9 +315,8 @@ export default function Register() {
                     </div>
                 </div>
 
-                {/* Floating Elements */}
-                <div className="absolute top-20 right-20 w-24 h-24 bg-white/10 rounded-3xl backdrop-blur-lg rotate-12" />
-                <div className="absolute bottom-20 right-16 w-16 h-16 bg-white/10 rounded-2xl backdrop-blur-lg -rotate-12" />
+                <div className="absolute top-20 right-20 w-20 h-20 bg-white/10 rounded-2xl backdrop-blur-lg" />
+                <div className="absolute bottom-32 right-32 w-16 h-16 bg-white/10 rounded-full backdrop-blur-lg" />
             </div>
         </div>
     );

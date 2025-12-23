@@ -41,9 +41,27 @@ export const authApi = {
         return response.data;
     },
 
-    // Google OAuth - Register (new users only)
+    // Google OAuth - Register Step 1 (returns pending data for username selection)
     googleRegister: async (idToken) => {
         const response = await api.post('/auth/google/register', { id_token: idToken });
+        return response.data;
+    },
+
+    // Google OAuth - Register Step 2 (complete registration with username)
+    completeGoogleRegistration: async (pendingData, username) => {
+        const response = await api.post('/auth/google/complete-registration', {
+            email: pendingData.email,
+            google_id: pendingData.google_id,
+            name: pendingData.name,
+            picture: pendingData.picture,
+            username: username,
+        });
+        return response.data;
+    },
+
+    // Check username availability (for real-time validation)
+    checkUsername: async (username) => {
+        const response = await api.get(`/auth/check-username?username=${encodeURIComponent(username)}`);
         return response.data;
     },
 };
