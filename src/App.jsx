@@ -8,6 +8,8 @@ import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from './store';
 import { Layout } from './components/layout';
 import { Login, Register, SetPassword, ChooseUsername, ForgotPassword, Chat, Contacts, Settings } from './pages';
+import CallScreen from './components/call/CallScreen';
+import IncomingCallModal from './components/call/IncomingCallModal';
 
 // Protected route wrapper
 function ProtectedRoute({ children }) {
@@ -97,6 +99,10 @@ export default function App() {
           },
         }}
       />
+
+      {/* Call Components (shown globally) */}
+      <CallScreen />
+      <IncomingCallModal />
 
       <Routes>
         {/* Public routes */}

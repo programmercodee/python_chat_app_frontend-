@@ -41,6 +41,11 @@ const useSocketStore = create((set, get) => ({
         socket.on('connect', () => {
             console.log('Socket connected:', socket.id);
             set({ isConnected: true });
+
+            // Setup call signaling listeners when socket connects
+            import('./callStore').then(module => {
+                module.setupCallSocketListeners();
+            });
         });
 
         socket.on('disconnect', (reason) => {

@@ -3,11 +3,12 @@
  */
 
 import { useEffect, useState, useRef } from 'react';
-import { MessageCircle, Plus, Send, Paperclip, Smile, ArrowLeft, Clock, Search, Check, CheckCheck } from 'lucide-react';
+import { MessageCircle, Plus, Send, Paperclip, Smile, ArrowLeft, Clock, Search, Check, CheckCheck, Phone as PhoneIcon, Video as VideoIcon } from 'lucide-react';
 import { useAuthStore, useChatStore, useSocketStore } from '../store';
 import { Avatar } from '../components/ui';
 import logo from '../assets/logo.png';
 import TypingIndicator from '../components/chat/TypingIndicator';
+import useCallStore from '../store/callStore';
 
 // Helper to decode base64 message
 // Helper to decode base64 message (Unicode safe)
@@ -341,6 +342,24 @@ export default function Chat() {
         return conv.members?.find(m => m.user_id !== user?.id);
     };
 
+    // Start a voice or video call
+    const handleStartCall = async (callType) => {
+        const other = getOtherMember();
+        if (!other) return;
+
+        try {
+            await useCallStore.getState().initiateCall(
+                other.user_id,
+                other.username,
+                other.avatar_url,
+                callType
+            );
+        } catch (error) {
+            console.error('Failed to start call:', error);
+            // Could show a toast here
+        }
+    };
+
     const otherMember = getOtherMember();
     const chatName = activeConversation?.type === 'group'
         ? activeConversation.name
@@ -571,6 +590,28 @@ export default function Chat() {
                                     {isOtherTyping ? 'typing...' : (isOtherOnline ? 'Online' : 'Offline')}
                                 </p>
                             </div>
+
+                            {/* Call Buttons */}
+                            {activeConversation && activeConversation.type !== 'group' && (
+                                <div className="flex items-center gap-2">
+                                    {/* Voice Call */}
+                                    <button
+                                        onClick={() => handleStartCall('audio')}
+                                        className="p-3 rounded-xl bg-[#1a1a1a] border border-[#262626] text-white hover:bg-[#252525] transition"
+                                        title="Voice Call"
+                                    >
+                                        <PhoneIcon className="w-5 h-5" />
+                                    </button>
+                                    {/* Video Call */}
+                                    <button
+                                        onClick={() => handleStartCall('video')}
+                                        className="p-3 rounded-xl bg-[#1a1a1a] border border-[#262626] text-white hover:bg-[#252525] transition"
+                                        title="Video Call"
+                                    >
+                                        <VideoIcon className="w-5 h-5" />
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
                         {/* Messages Area */}
