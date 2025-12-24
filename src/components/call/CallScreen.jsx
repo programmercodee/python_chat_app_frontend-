@@ -29,6 +29,7 @@ export default function CallScreen() {
 
     const localVideoRef = useRef(null);
     const remoteVideoRef = useRef(null);
+    const remoteAudioRef = useRef(null);  // For voice calls
     const [callTime, setCallTime] = useState(0);
     const [isMinimized, setIsMinimized] = useState(false);
 
@@ -39,12 +40,16 @@ export default function CallScreen() {
         }
     }, [localStream]);
 
-    // Attach remote stream
+    // Attach remote stream (video call uses video element, voice call uses audio element)
     useEffect(() => {
-        if (remoteVideoRef.current && remoteStream) {
-            remoteVideoRef.current.srcObject = remoteStream;
+        if (remoteStream) {
+            if (callType === 'video' && remoteVideoRef.current) {
+                remoteVideoRef.current.srcObject = remoteStream;
+            } else if (callType === 'audio' && remoteAudioRef.current) {
+                remoteAudioRef.current.srcObject = remoteStream;
+            }
         }
-    }, [remoteStream]);
+    }, [remoteStream, callType]);
 
     // Call timer
     useEffect(() => {
@@ -119,6 +124,11 @@ export default function CallScreen() {
                             {remoteUser?.username || 'Unknown'}
                         </h2>
                         <p className="mt-2 text-base sm:text-lg text-zinc-400">{getStatusText()}</p>
+
+                        {/* Hidden audio element for voice calls */}
+                        {callType === 'audio' && remoteStream && (
+                            <audio ref={remoteAudioRef} autoPlay />
+                        )}
                     </div>
                 )}
 
