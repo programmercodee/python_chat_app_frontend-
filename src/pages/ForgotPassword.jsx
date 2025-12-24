@@ -5,7 +5,7 @@
  * Step 3: New password
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Key, Lock, ArrowRight, ArrowLeft, Loader2, MessageCircle, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -24,6 +24,7 @@ export default function ForgotPassword() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [resetToken, setResetToken] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [resendTimer, setResendTimer] = useState(0); // Countdown in seconds
 
     // Handle OTP input
     const handleOtpChange = (index, value) => {
@@ -48,6 +49,16 @@ export default function ForgotPassword() {
         }
     };
 
+    // Countdown timer effect for Resend OTP
+    useEffect(() => {
+        if (resendTimer > 0) {
+            const interval = setInterval(() => {
+                setResendTimer((prev) => prev - 1);
+            }, 1000);
+            return () => clearInterval(interval);
+        }
+    }, [resendTimer]);
+
     // Step 1: Submit email
     const handleEmailSubmit = async (e) => {
         e.preventDefault();
@@ -62,9 +73,27 @@ export default function ForgotPassword() {
         try {
             await authApi.forgotPassword(email);
             toast.success('OTP sent to your email!');
+            setResendTimer(120); // Start 2-minute timer
             setStep(2);
         } catch (error) {
             toast.error(error.response?.data?.detail || 'Failed to send OTP');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Resend OTP handler
+    const handleResendOtp = async () => {
+        if (resendTimer > 0) return;
+
+        setIsLoading(true);
+        try {
+            await authApi.forgotPassword(email);
+            toast.success('OTP resent to your email!');
+            setResendTimer(120); // Reset 2-minute timer
+            setOtp(['', '', '', '', '', '']); // Clear OTP inputs
+        } catch (error) {
+            toast.error(error.response?.data?.detail || 'Failed to resend OTP');
         } finally {
             setIsLoading(false);
         }
@@ -249,8 +278,16 @@ export default function ForgotPassword() {
 
                             <p className="text-center text-zinc-500 text-sm mb-4">
                                 Didn't receive the code?{' '}
-                                <button type="button" className="text-blue-500 hover:text-blue-400">
-                                    Resend OTP
+                                <button
+                                    type="button"
+                                    onClick={handleResendOtp}
+                                    disabled={resendTimer > 0 || isLoading}
+                                    className={`font-medium ${resendTimer > 0 ? 'text-zinc-600 cursor-not-allowed' : 'text-blue-500 hover:text-blue-400'}`}
+                                >
+                                    {resendTimer > 0
+                                        ? `Resend in ${Math.floor(resendTimer / 60)}:${(resendTimer % 60).toString().padStart(2, '0')}`
+                                        : 'Resend OTP'
+                                    }
                                 </button>
                             </p>
 
