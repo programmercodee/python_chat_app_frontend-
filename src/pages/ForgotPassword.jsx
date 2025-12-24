@@ -76,7 +76,7 @@ export default function ForgotPassword() {
             setResendTimer(120); // Start 2-minute timer
             setStep(2);
         } catch (error) {
-            toast.error(error.response?.data?.detail || 'Failed to send OTP');
+            toast.error(error.response?.data?.error || error.response?.data?.detail || 'Failed to send OTP');
         } finally {
             setIsLoading(false);
         }
@@ -93,7 +93,7 @@ export default function ForgotPassword() {
             setResendTimer(120); // Reset 2-minute timer
             setOtp(['', '', '', '', '', '']); // Clear OTP inputs
         } catch (error) {
-            toast.error(error.response?.data?.detail || 'Failed to resend OTP');
+            toast.error(error.response?.data?.error || error.response?.data?.detail || 'Failed to resend OTP');
         } finally {
             setIsLoading(false);
         }
@@ -119,7 +119,7 @@ export default function ForgotPassword() {
             toast.success('OTP verified successfully!');
             setStep(3);
         } catch (error) {
-            toast.error(error.response?.data?.detail || 'Invalid OTP');
+            toast.error(error.response?.data?.error || error.response?.data?.detail || 'Invalid OTP');
         } finally {
             setIsLoading(false);
         }
@@ -148,7 +148,7 @@ export default function ForgotPassword() {
             toast.success('Password reset successfully! Please login with your new password.');
             navigate('/login');
         } catch (error) {
-            toast.error(error.response?.data?.detail || 'Failed to reset password');
+            toast.error(error.response?.data?.error || error.response?.data?.detail || 'Failed to reset password');
         } finally {
             setIsLoading(false);
         }

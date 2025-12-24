@@ -79,7 +79,7 @@ export default function Register() {
             setResendTimer(120); // Start 2-minute timer
             setStep(2);
         } catch (err) {
-            toast.error(err.response?.data?.detail || 'Failed to send OTP');
+            toast.error(err.response?.data?.error || err.response?.data?.detail || 'Failed to send OTP');
         } finally {
             setSubmitting(false);
         }
@@ -108,7 +108,7 @@ export default function Register() {
                 }
             });
         } catch (err) {
-            toast.error(err.response?.data?.detail || 'Invalid OTP');
+            toast.error(err.response?.data?.error || err.response?.data?.detail || 'Invalid OTP');
         } finally {
             setSubmitting(false);
         }
@@ -125,7 +125,7 @@ export default function Register() {
             setResendTimer(120);
             setOtp(['', '', '', '', '', '']);
         } catch (err) {
-            toast.error(err.response?.data?.detail || 'Failed to resend OTP');
+            toast.error(err.response?.data?.error || err.response?.data?.detail || 'Failed to resend OTP');
         } finally {
             setSubmitting(false);
         }
@@ -148,7 +148,7 @@ export default function Register() {
                 });
             }
         } catch (err) {
-            toast.error(err.response?.data?.detail || 'Google registration failed');
+            toast.error(err.response?.data?.error || err.response?.data?.detail || 'Google registration failed');
         } finally {
             setSubmitting(false);
         }

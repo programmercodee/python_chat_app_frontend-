@@ -125,7 +125,7 @@ export default function ChooseUsername() {
                 navigate('/');
             }
         } catch (err) {
-            toast.error(err.response?.data?.detail || 'Registration failed');
+            toast.error(err.response?.data?.error || err.response?.data?.detail || 'Registration failed');
         } finally {
             setSubmitting(false);
         }
