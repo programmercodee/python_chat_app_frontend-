@@ -64,4 +64,29 @@ export const authApi = {
         const response = await api.get(`/auth/check-username?username=${encodeURIComponent(username)}`);
         return response.data;
     },
+
+    // Password Reset Flow
+    forgotPassword: async (email) => {
+        const response = await api.post('/auth/forgot-password', { email });
+        return response.data;
+    },
+
+    verifyOtp: async (email, otp) => {
+        const response = await api.post('/auth/verify-otp', { email, otp });
+        return response.data; // returns { reset_token: "..." }
+    },
+
+    resetPassword: async (token, newPassword) => {
+        // We need to set the Authorization header manually for this request since it uses a specific reset token
+        // NOT the logged-in user's access token (if any)
+        const response = await api.post('/auth/reset-password',
+            { new_password: newPassword },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+        return response.data;
+    },
 };

@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Key, Lock, ArrowRight, ArrowLeft, Loader2, MessageCircle, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { authApi } from '../api/auth';
 
 export default function ForgotPassword() {
     const navigate = useNavigate();
@@ -21,6 +22,7 @@ export default function ForgotPassword() {
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [resetToken, setResetToken] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
 
     // Handle OTP input
@@ -57,12 +59,15 @@ export default function ForgotPassword() {
 
         setIsLoading(true);
 
-        // Simulate API call (static for now)
-        setTimeout(() => {
-            setIsLoading(false);
+        try {
+            await authApi.forgotPassword(email);
             toast.success('OTP sent to your email!');
             setStep(2);
-        }, 1000);
+        } catch (error) {
+            toast.error(error.response?.data?.detail || 'Failed to send OTP');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     // Step 2: Verify OTP
@@ -77,12 +82,18 @@ export default function ForgotPassword() {
 
         setIsLoading(true);
 
-        // Simulate API call (static for now)
-        setTimeout(() => {
-            setIsLoading(false);
+        setIsLoading(true);
+
+        try {
+            const data = await authApi.verifyOtp(email, fullOtp);
+            setResetToken(data.reset_token);
             toast.success('OTP verified successfully!');
             setStep(3);
-        }, 1000);
+        } catch (error) {
+            toast.error(error.response?.data?.detail || 'Invalid OTP');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     // Step 3: Reset password
@@ -101,12 +112,17 @@ export default function ForgotPassword() {
 
         setIsLoading(true);
 
-        // Simulate API call (static for now)
-        setTimeout(() => {
-            setIsLoading(false);
+        setIsLoading(true);
+
+        try {
+            await authApi.resetPassword(resetToken, newPassword);
             toast.success('Password reset successfully! Please login with your new password.');
             navigate('/login');
-        }, 1000);
+        } catch (error) {
+            toast.error(error.response?.data?.detail || 'Failed to reset password');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     // Step indicator
@@ -116,8 +132,8 @@ export default function ForgotPassword() {
                 <div key={s} className="flex items-center">
                     <div
                         className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${step >= s
-                                ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
-                                : 'bg-[#1f1f1f] text-zinc-500'
+                            ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
+                            : 'bg-[#1f1f1f] text-zinc-500'
                             }`}
                     >
                         {step > s ? <CheckCircle className="w-4 h-4" /> : s}
