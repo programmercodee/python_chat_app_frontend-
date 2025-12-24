@@ -26,7 +26,7 @@ function debounce(func, wait) {
 export default function ChooseUsername() {
     const navigate = useNavigate();
     const location = useLocation();
-    const { register, setUser } = useAuthStore();
+    const { setUser } = useAuthStore();
 
     // Get pending data from navigation state
     const pendingData = location.state?.pendingData;
@@ -105,15 +105,24 @@ export default function ChooseUsername() {
                 toast.success('Welcome to TalkTogether!');
                 navigate('/');
             } else if (registrationType === 'email' && emailData) {
-                // Email/password registration flow
-                const result = await register(emailData.email, username, emailData.password);
+                // Email/password registration flow with OTP verification
+                const data = await authApi.completeRegistration(
+                    emailData.email_verified_token,
+                    username,
+                    emailData.password
+                );
 
-                if (result.success) {
-                    toast.success('Account created successfully!');
-                    navigate('/');
-                } else {
-                    toast.error(result.error);
-                }
+                // Store tokens
+                localStorage.setItem('accessToken', data.access_token);
+                localStorage.setItem('refreshToken', data.refresh_token);
+
+                // Get user data and update auth store
+                const user = await authApi.me();
+                localStorage.setItem('userId', user.id);
+                setUser(user);
+
+                toast.success('Welcome to TalkTogether!');
+                navigate('/');
             }
         } catch (err) {
             toast.error(err.response?.data?.detail || 'Registration failed');
@@ -161,10 +170,10 @@ export default function ChooseUsername() {
                                 minLength={3}
                                 maxLength={50}
                                 className={`w-full pl-12 pr-12 py-3.5 rounded-xl bg-[#0a0a0a] border text-white text-sm outline-none transition-colors ${usernameAvailable === true
-                                        ? 'border-green-500 focus:border-green-500'
-                                        : usernameAvailable === false
-                                            ? 'border-red-500 focus:border-red-500'
-                                            : 'border-[#262626] focus:border-blue-500'
+                                    ? 'border-green-500 focus:border-green-500'
+                                    : usernameAvailable === false
+                                        ? 'border-red-500 focus:border-red-500'
+                                        : 'border-[#262626] focus:border-blue-500'
                                     }`}
                             />
                             {/* Status indicator */}

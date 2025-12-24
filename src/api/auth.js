@@ -65,6 +65,26 @@ export const authApi = {
         return response.data;
     },
 
+    // Registration OTP Flow
+    sendRegistrationOtp: async (email) => {
+        const response = await api.post('/auth/register/send-otp', { email });
+        return response.data;
+    },
+
+    verifyRegistrationOtp: async (email, otp) => {
+        const response = await api.post('/auth/register/verify-otp', { email, otp });
+        return response.data; // returns { verified: true, email_verified_token: "..." }
+    },
+
+    completeRegistration: async (emailVerifiedToken, username, password) => {
+        const response = await api.post('/auth/register/complete', {
+            email_verified_token: emailVerifiedToken,
+            username,
+            password
+        });
+        return response.data; // returns { access_token, refresh_token }
+    },
+
     // Password Reset Flow
     forgotPassword: async (email) => {
         const response = await api.post('/auth/forgot-password', { email });
