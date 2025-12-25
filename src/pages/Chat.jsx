@@ -522,7 +522,15 @@ export default function Chat() {
                                             </p>
                                         </div>
                                         {conv.unread_count > 0 && (
-                                            <span className="!py-1 !px-2.5 text-xs font-semibold bg-blue-500 text-white rounded-[10px]">
+                                            <span
+                                                className="text-xs font-semibold bg-blue-500 text-white rounded-full"
+                                                style={{
+                                                    padding: '4px 10px',
+                                                    minWidth: '24px',
+                                                    textAlign: 'center',
+                                                    display: 'inline-block',
+                                                }}
+                                            >
                                                 {conv.unread_count}
                                             </span>
                                         )}

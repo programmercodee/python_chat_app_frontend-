@@ -217,7 +217,7 @@ export default function Contacts() {
                         ) : (
                             contacts.map((contact) => (
                                 <div key={contact.id} style={cardStyle}>
-                                    <Avatar name={contact.contact_user?.username} isOnline={contact.contact_user?.is_online} size="md" />
+                                    <Avatar src={contact.contact_user?.avatar_url} name={contact.contact_user?.username} isOnline={contact.contact_user?.is_online} size="md" />
                                     <div style={{ flex: 1 }}>
                                         <p style={{ fontSize: '15px', fontWeight: '500', color: 'white' }}>
                                             {contact.contact_user?.username}
@@ -300,7 +300,7 @@ export default function Contacts() {
                         ) : (
                             requests.map((request) => (
                                 <div key={request.id} style={cardStyle}>
-                                    <Avatar name={request.from_user?.username} size="md" />
+                                    <Avatar src={request.from_user?.avatar_url} name={request.from_user?.username} size="md" />
                                     <div style={{ flex: 1 }}>
                                         <p style={{ fontSize: '15px', fontWeight: '500', color: 'white' }}>
                                             {request.from_user?.username}
@@ -397,7 +397,7 @@ export default function Contacts() {
                         ) : (
                             searchResults.map((user) => (
                                 <div key={user.id} style={cardStyle}>
-                                    <Avatar name={user.username} size="md" />
+                                    <Avatar src={user.avatar_url} name={user.username} size="md" />
                                     <div style={{ flex: 1 }}>
                                         <p style={{ fontSize: '15px', fontWeight: '500', color: 'white' }}>
                                             {user.username}

@@ -98,13 +98,15 @@ const useChatStore = create((set, get) => ({
 
             return {
                 messages: updatedMessages,
-                // Update conversation's last message and increment unread count if not active
+                // Update conversation's last message
+                // NOTE: Don't increment unread_count here - backend handles it via status field
                 conversations: state.conversations.map(conv =>
                     conv.id === message.conversation_id
                         ? {
                             ...conv,
                             last_message: message,
-                            // Increment unread count if message is from other user and not in active conversation
+                            // Increment unread ONLY if not in active conversation (for real-time feel)
+                            // This will be corrected on next fetchConversations
                             unread_count: (!isActiveConversation && isFromOtherUser)
                                 ? (conv.unread_count || 0) + 1
                                 : conv.unread_count
